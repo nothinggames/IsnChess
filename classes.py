@@ -48,7 +48,7 @@ class Tour():
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.image = None
+		self.image = obtenir_image(f"image/tour_{self.equipe}.png")
 
 
 	def cases_possibles(self, plateau):
@@ -73,7 +73,8 @@ class Cavalier():
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.image = None
+		self.image = obtenir_image(f"image/cavalier_{self.equipe}.png")
+
 
 	
 	def cases_possibles(self, plateau):
@@ -94,7 +95,8 @@ class Fou():
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.image = None
+		self.image = obtenir_image(f"image/fou_{self.equipe}.png")
+
 	
 	def cases_possibles(self):
 		possibilites = []
@@ -113,7 +115,8 @@ class Dame():
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.image = None
+		self.image = obtenir_image(f"image/dame_{self.equipe}.png")
+
 
 		def cases_possibles(self, plateau):
 			possibilites = []

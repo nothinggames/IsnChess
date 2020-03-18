@@ -7,7 +7,7 @@ class Bouton():#Cette classe sert à créer et stocker chaque bouton avec ses co
 	def __init__(self, i, j, frame_plateau, text=""):
 		self.i = i #i correspond au numéro de la ligne
 		self.j = j #j correspond au numéro de la colone
-		self.bouton = Button(frame_plateau, text=f"{i}{j}", background=self.couleur_cases(), command=lambda: appel_bouton(plateau, self.i, self.j),
+		self.bouton = Button(frame_plateau, background=self.couleur_cases(), command=lambda: appel_bouton(plateau, self.i, self.j),
 						width=10, height=5, image="", bd=0,
 							 activebackground="yellow", relief=RIDGE) #Chaque case est un bouton qui appel la fonction appel_bouton(i, j)
 		#self.bouton.bind("<Enter>", self.bouton_entree)
@@ -80,25 +80,25 @@ def placement_pieces(): #Sert à placer les pieces sur le plateau (sans les affi
 		plateau[f'{6}{i}'] = pion
 		#pion = Pion("noir", 6, i)
 		#plateau[f'{1}{i}'] = pion
-	return #NE PAS ENLEVER
+	#return #NE PAS ENLEVER
 	#Placement des tours
 	for i in range(2):
-		plateau[f'{0}{i*7}'] = Tour("blanc", 0, i*7)
-		plateau[f'{7}{i*7}'] = Tour("noir", 7, i*7)
+		plateau[f'{0}{i * 7}'] = Tour("blanc", 0, i * 7)
+		plateau[f'{7}{i * 7}'] = Tour("noir", 7, i * 7)
 
-		#Placement des cavaliers
-		plateau[f'{0}{1+i*5}'] = Cavalier("blanc", 0, 1+i*5)
-		plateau[f'{7}{1+i*5}'] = Cavalier("noir", 7, 1+i*5)
+		# Placement des cavaliers
+		plateau[f'{0}{1 + i * 5}'] = Cavalier("blanc", 0, 1 + i * 5)
+		plateau[f'{7}{1 + i * 5}'] = Cavalier("noir", 7, 1 + i * 5)
 
-		#Placement des fous
-		plateau[f'{0}{2+i*3}'] = Fou("blanc", 0, 2+i*4)
-		plateau[f'{7}{2+i*3}'] = Fou("noir", 7, 2+i*4)
+		# Placement des fous
+		plateau[f'{0}{2 + i * 3}'] = Fou("blanc", 0, 2 + i * 4)
+		plateau[f'{7}{2 + i * 3}'] = Fou("noir", 7, 2 + i * 4)
 
 	#reines et rois
 	plateau[f'{0}{4}'] = Roi("blanc", 0, 4)
 	plateau[f'{7}{3}'] = Roi("noir", 7, 3)
 	plateau[f'{0}{3}'] = Dame("blanc", 0, 3)
-	#plateau[f'{7}{4}'] = Da, 7, 4)
+	plateau[f'{7}{4}'] = Dame("noir", 7, 4)
 
 
 def creation_terrain(fen): #initialiser le plateau.
