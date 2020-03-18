@@ -1,11 +1,13 @@
 from tkinter import *
+from fonctions import *
 
 class Pion():
 	def __init__(self, equipe, i, j):
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.image = PhotoImage(file="image/pion.png")
+		#self.image = PhotoImage(file=f"image/pion_{self.equipe}.png")
+		self.image = obtenir_image(f"image/pion_{self.equipe}.png")
 		
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -33,7 +35,7 @@ class Tour():
 		self.image = None
 
 
-	def cases_possibles(self):
+	def cases_possibles(self, plateau):
 		possibilites = []
 		a = 1
 		while plateau[f'{self.i+a}{self.j}'] == None:
@@ -58,8 +60,18 @@ class Cavalier():
 		self.image = None
 
 	
-	def cases_possibles(self):
-		pass
+	def cases_possibles(self, plateau):
+		possibilites = []
+		for a in range(1, 2):
+			if plateau[f'{self.i+a}{self.j}'] == None:
+				possibilites.append(f'{self.i+a}{self.j}')
+			if plateau[f'{self.i}{self.j+a}'] == None:
+				possibilites.append(f'{self.i}{self.j+a}')
+			if plateau[f'{self.i-a}{self.j}'] == None:
+				possibilites.append(f'{self.i+a}{self.j}')
+			if plateau[f'{self.i}{self.j-a}'] == None:
+				possibilites.append(f'{self.i}{self.j+a}')
+		return possibilites
 
 class Fou():
 	def __init__(self, equipe, i, j):
@@ -67,11 +79,18 @@ class Fou():
 		self.i = i
 		self.j = j
 		self.image = None
-	def cases_possibles(self):
-		possibilites = []
 	
 	def cases_possibles(self):
-		pass
+		possibilites = []
+		a = 1
+		while plateau[f'{self.i+a}{self.j+a}'] == None:
+			possibilites.append(f'{self.i+a}{self.j+a}')
+			a += 1
+		while plateau[f'{self.i-a}{self.j-a}'] == None:
+			possibilites.append(f'{self.i-a}{self.j-a}')
+			a += 1
+		return possibilites
+
 
 class Dame():
 	def __init__(self, equipe, i, j):
@@ -80,19 +99,38 @@ class Dame():
 		self.j = j
 		self.image = None
 
-	
-	def cases_possibles(self):
-		pass
+		def cases_possibles(self, plateau):
+			possibilites = []
+			a = 1
+			while plateau[f'{self.i+a}{self.j}'] == None:
+				possibilites.append(f'{self.i+a}{self.j}')
+				a += 1
+			while plateau[f'{self.i-a}{self.j}'] == None:
+				possibilites.append(f'{self.i-a}{self.j}')
+				a += 1
+			while plateau[f'{self.i}{self.j+a}'] == None:
+				possibilites.append(f'{self.i}{self.j+a}')
+				a += 1
+			while plateau[f'{self.i}{self.j-a}'] == None:
+				possibilites.append(f'{self.i}{self.j-a}')
+				a += 1
+			while plateau[f'{self.i+a}{self.j+a}'] == None:
+				possibilites.append(f'{self.i+a}{self.j+a}')
+				a += 1
+			while plateau[f'{self.i-a}{self.j-a}'] == None:
+				possibilites.append(f'{self.i-a}{self.j-a}')
+				a += 1
+			return possibilites
 
 class Roi():
 	def __init__(self, equipe, i, j):
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.image = None
+		self.image = obtenir_image(f"image/roi_{self.equipe}.png")
 
 
-	def cases_possibles(self):
+	def cases_possibles(self, plateau):
 		possibilites = [
 			f'{self.i+1}{self.j}',
 			f'{self.i+1}{self.j-1}',
@@ -112,20 +150,3 @@ class Roi():
 					possibilites.remove(e)
 
 		return possibilites
-	
-
-#------------ C'est un exemple ou on garde?-------------
-"""
-pion = [
-	[tour, cavaloer,],
-	[pion, pio ],
-	
-]
-pion[0][0]
-"""
-#------------ C'est un exemple ou on garde?-------------
-
-
-
-
-
