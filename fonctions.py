@@ -56,11 +56,3 @@ def case_hors_plateau(coord):
 def tuple_to_string(a):
 	return f"{a[0]}{a[1]}"
 
-
-
-
-
-
-def est_echec(plateau):
-	for e in plateau:
-		print(e)#plateau[f'{self.i+a}{self.j}']

@@ -47,11 +47,11 @@ class Bouton():#Cette classe sert à créer et stocker chaque bouton avec ses co
 #------------------------ceci est la partie appelé par les boutton pieces---------------------------
 
 def appel_bouton(plateau, i, j): #Fonction appelé lors d'un clic sur un bouton, les coordonnées (i, j) donnent le bouton activé
-	#print(plateau[f'{i}{j}'])
-	global actif
-	global possibilite
+	#print(plateau[f'{i}{j}
+	print(i, j)
+	global actif, possibilite, joueur
 	if possibilite == None:
-		if plateau[f'{i}{j}'] != None:
+		if plateau[f'{i}{j}'] != None and plateau[f'{i}{j}'].equipe == joueur:
 			possibilite = plateau[f'{i}{j}'].cases_possibles(plateau)
 			actif = plateau[f"{i}{j}"]
 			actualier_couleurs(buttons_cases, possibilite)
@@ -60,10 +60,18 @@ def appel_bouton(plateau, i, j): #Fonction appelé lors d'un clic sur un bouton,
 			deplacer(plateau, buttons_cases, actif, i, j)
 			actif = None
 			possibilite = None
+			if joueur == "blanc":
+				joueur = "noir"
+			else:
+				joueur = "blanc"
 		else:
-			if plateau[f'{i}{j}'] != None:
+			if plateau[f'{i}{j}'] != None and plateau[f'{i}{j}'].equipe == joueur:
 				possibilite = plateau[f'{i}{j}'].cases_possibles(plateau)
 				actif = plateau[f"{i}{j}"]
+				actualier_couleurs(buttons_cases, possibilite)
+			else:
+				actif = None
+				possibilite = None
 				actualier_couleurs(buttons_cases, possibilite)
 
 	# On regarde si la case est vide dans une liste plateau. Si elle est pleine, on appele la pièce correspondante
@@ -91,15 +99,14 @@ def placement_pieces(): #Sert à placer les pieces sur le plateau (sans les affi
 		plateau[f'{7}{1 + i * 5}'] = Cavalier("noir", 7, 1 + i * 5)
 
 		# Placement des fous
-		plateau[f'{0}{2 + i * 3}'] = Fou("blanc", 0, 2 + i * 4)
-		plateau[f'{7}{2 + i * 3}'] = Fou("noir", 7, 2 + i * 4)
+		plateau[f'{0}{2 + i * 3}'] = Fou("blanc", 0, 2 + i * 3)
+		plateau[f'{7}{2 + i * 3}'] = Fou("noir", 7, 2 + i * 3)
 
 	#reines et rois
 	plateau[f'{0}{4}'] = Roi("blanc", 0, 4)
 	plateau[f'{7}{3}'] = Roi("noir", 7, 3)
 	plateau[f'{0}{3}'] = Dame("blanc", 0, 3)
 	plateau[f'{7}{4}'] = Dame("noir", 7, 4)
-
 
 def creation_terrain(fen): #initialiser le plateau.
 
@@ -112,8 +119,24 @@ def creation_terrain(fen): #initialiser le plateau.
 		for j in range(8):
 			buttons_cases[f'{i}{j}'] = Bouton(i, j, frame_plateau) #Création des boutons
 			plateau[f'{i}{j}'] = None #Création d'un plateau vide
-	frame_plateau.grid(row=0, column=0)
+	frame_plateau.grid(row=1, column=0)
 	return buttons_cases, plateau
+
+#Barre d'informations
+def afficher_barre_info(fen):
+	barre_info = {}
+	barre_info["frame"] = Frame()
+	barre_info["joueur"] = Label(barre_info["frame"], text="Joueur Blanc")
+	barre_info["joueur"].grid(row=0, column=0)
+	barre_info["frame"].grid(row=0, column=0)
+	actualiser_barre_info(fen, barre_info, 0)
+
+def actualiser_barre_info(fen, barre_info, i):
+	barre_info["joueur"]["text"] = i
+	i += 1
+	fen.after(1000, lambda: actualiser_barre_info(fen, barre_info, i))
+
+
 
 fen = Tk()
 fen.title("jeu d'échec")
@@ -121,6 +144,9 @@ fen.resizable(False, False) #Empêche de redimentionner la fenêtre.
 
 possibilite = None #servira à stoquer les cases possibles des pièces en mouvement
 actif = None #stoque la pièce en cours de déplacement
+joueur = "blanc"
+
+afficher_barre_info(fen)
 buttons_cases, plateau = creation_terrain(fen) #création du plateau.
 
 placement_pieces() #mise en place des pièces (sans affichage)
