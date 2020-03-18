@@ -6,26 +6,36 @@ class Pion():
 		self.equipe = equipe
 		self.i = i
 		self.j = j
+		self.deplace = False
 		#self.image = PhotoImage(file=f"image/pion_{self.equipe}.png")
 		self.image = obtenir_image(f"image/pion_{self.equipe}.png")
 		
 	def cases_possibles(self, plateau):
-		possibilites = []
 		if self.equipe == "blanc":
-			if plateau[f'{self.i+1}{self.j}'] == None:
-				possibilites.append(f'{self.i+1}{self.j}')
-			if plateau[f'{self.i+1}{self.j+1}'] != None:
-				possibilites.append(f'{self.i+1}{self.j}')
-			if plateau[f'{self.i+1}{self.j-1}'] != None:
-				possibilites.append(f'{self.i+1}{self.j}')
-		if self.equipe == "noir":
-			if plateau[f'{self.i-1}{self.j}'] == None:
-				possibilites.append(f'{self.i-1}{self.j}')
-			if plateau[f'{self.i-1}{self.j-1}'] != None:
-				possibilites.append(f'{self.i-1}{self.j}')
-			if plateau[f'{self.i-1}{self.j+1}'] != None:
-				possibilites.append(f'{self.i-1}{self.j+1}')
-		return possibilites
+			k = 1
+		else:
+			k = -1
+
+		possibilites = [
+			(self.i + 1*k, self.j),
+			(self.i + 1*k, self.j - 1),
+			(self.i + 1*k, self.j + 1)
+		]
+		i = 0
+		if not self.deplace:
+			possibilites.append((self.i + 2*k, self.j))
+		for e in possibilites:
+			if case_hors_plateau(e):
+				possibilites.remove(e)
+			else:
+				if i == 0 or i==2:
+					if plateau[tuple_to_string(e)] != None:
+						possibilites.remove(e)
+				else:
+					if plateau[tuple_to_string(e)] == None:
+						possibilites.remove(e)
+			i += 1
+		return [tuple_to_string(x) for x in possibilites]
 
 class Tour():
 	def __init__(self, equipe, i, j):
@@ -141,7 +151,6 @@ class Roi():
 			f'{self.i-1}{self.j-1}',
 			f'{self.i-1}{self.j+1}',
 		]
-
 		for e in possibilites:
 			if case_hors_plateau(e):
 				possibilites.remove(e)
@@ -150,3 +159,11 @@ class Roi():
 					possibilites.remove(e)
 
 		return possibilites
+	
+
+
+
+
+
+
+

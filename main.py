@@ -7,7 +7,7 @@ class Bouton():#Cette classe sert à créer et stocker chaque bouton avec ses co
 	def __init__(self, i, j, frame_plateau, text=""):
 		self.i = i #i correspond au numéro de la ligne
 		self.j = j #j correspond au numéro de la colone
-		self.bouton = Button(frame_plateau, text=f"{i}{j}", background=self.couleur_cases(), command=lambda: appel_bouton(plateau, actif, possibilite, self.i, self.j),
+		self.bouton = Button(frame_plateau, text=f"{i}{j}", background=self.couleur_cases(), command=lambda: appel_bouton(plateau, self.i, self.j),
 						width=10, height=5, image="", bd=0,
 							 activebackground="yellow", relief=RIDGE) #Chaque case est un bouton qui appel la fonction appel_bouton(i, j)
 		self.bouton.bind("<Enter>", self.bouton_entree)
@@ -46,9 +46,11 @@ class Bouton():#Cette classe sert à créer et stocker chaque bouton avec ses co
 
 #------------------------ceci est la partie appelé par les boutton pieces---------------------------
 
-def appel_bouton(plateau, actif, possibilite, i, j): #Fonction appelé lors d'un clic sur un bouton, les coordonnées (i, j) donnent le bouton activé
+def appel_bouton(plateau, i, j): #Fonction appelé lors d'un clic sur un bouton, les coordonnées (i, j) donnent le bouton activé
 	#print(plateau[f'{i}{j}'])
-	print(possibilite)
+	global actif
+	global possibilite
+	print(actif)
 	if possibilite == None:
 		if plateau[f'{i}{j}'] != None:
 			possibilite = plateau[f'{i}{j}'].cases_possibles(plateau)
@@ -58,6 +60,10 @@ def appel_bouton(plateau, actif, possibilite, i, j): #Fonction appelé lors d'un
 			deplacer(plateau, buttons_cases, actif, i, j)
 			actif = None
 			possibilite = None
+		else:
+			if plateau[f'{i}{j}'] != None:
+				possibilite = plateau[f'{i}{j}'].cases_possibles(plateau)
+				actif = plateau[f"{i}{j}"]
 
 	# On regarde si la case est vide dans une liste plateau. Si elle est pleine, on appele la pièce correspondante
 
@@ -65,12 +71,14 @@ def appel_bouton(plateau, actif, possibilite, i, j): #Fonction appelé lors d'un
 def placement_pieces(): #Sert à placer les pieces sur le plateau (sans les affichées)
 	#NE PAS DEPLACER CETTE FONCTION
 	global plateau
-	for i in range(1, 8): #Placement des pions
+	for i in range(8): #Placement des pions
 		pion = Pion("blanc", 1, i)
 		plateau[f'{1}{i}'] = pion
 
 		pion = Pion("noir", 6, i)
-		plateau[f'{1}{i}'] = pion
+		plateau[f'{6}{i}'] = pion
+		#pion = Pion("noir", 6, i)
+		#plateau[f'{1}{i}'] = pion
 	return #NE PAS ENLEVER
 	#Placement des tours
 	for i in range(2):

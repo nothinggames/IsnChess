@@ -36,12 +36,16 @@ def deplacer(plateau, buttons_cases, piece, i, j):
     
 
 def case_hors_plateau(coord):
-	i=int(coord[0])
-	j=int(coord[0])
+	i=coord[0]
+	j=coord[1]
 	if i < 0 or i>7 or j<0 or j>7:
 		return True
 	else:
 		return False
+
+def tuple_to_string(a):
+	return f"{a[0]}{a[1]}"
+
 
 
 
