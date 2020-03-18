@@ -21,21 +21,27 @@ class Pion():
 			(self.i + 1*k, self.j - 1),
 			(self.i + 1*k, self.j + 1)
 		]
-		i = 0
+		final = []
 		if not self.deplace:
 			possibilites.append((self.i + 2*k, self.j))
+		print(len(possibilites))
+		print((possibilites))
+		i = 0
 		for e in possibilites:
-			if case_hors_plateau(e):
-				possibilites.remove(e)
-			else:
-				if i == 0 or i==2:
-					if plateau[tuple_to_string(e)] != None:
-						possibilites.remove(e)
-				else:
+			print(e)
+			if not case_hors_plateau(e):
+				if i == 0 or i==3:
 					if plateau[tuple_to_string(e)] == None:
-						possibilites.remove(e)
+						if i == 3:
+							if plateau[tuple_to_string(possibilites[0])] == None:
+								final.append(tuple_to_string(e))
+						else:
+							final.append(tuple_to_string(e))
+				else:
+					if plateau[tuple_to_string(e)] != None and plateau[tuple_to_string(e)].equipe != self.equipe:
+						final.append(tuple_to_string(e))
 			i += 1
-		return [tuple_to_string(x) for x in possibilites]
+		return final
 
 class Tour():
 	def __init__(self, equipe, i, j):

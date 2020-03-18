@@ -10,8 +10,8 @@ class Bouton():#Cette classe sert à créer et stocker chaque bouton avec ses co
 		self.bouton = Button(frame_plateau, text=f"{i}{j}", background=self.couleur_cases(), command=lambda: appel_bouton(plateau, self.i, self.j),
 						width=10, height=5, image="", bd=0,
 							 activebackground="yellow", relief=RIDGE) #Chaque case est un bouton qui appel la fonction appel_bouton(i, j)
-		self.bouton.bind("<Enter>", self.bouton_entree)
-		self.bouton.bind("<Leave>", self.bouton_sortie)
+		#self.bouton.bind("<Enter>", self.bouton_entree)
+		#self.bouton.bind("<Leave>", self.bouton_sortie)
 		self.bouton_grid()
 
 
@@ -22,7 +22,7 @@ class Bouton():#Cette classe sert à créer et stocker chaque bouton avec ses co
 			self.bouton["height"] = 5
 		else:
 			self.bouton["width"] = 75
-			self.bouton["height"] = 75
+			self.bouton["height"] = 80
 		
 	def bouton_entree(self, e):
 		self.bouton["background"] = "red"
@@ -50,11 +50,11 @@ def appel_bouton(plateau, i, j): #Fonction appelé lors d'un clic sur un bouton,
 	#print(plateau[f'{i}{j}'])
 	global actif
 	global possibilite
-	print(actif)
 	if possibilite == None:
 		if plateau[f'{i}{j}'] != None:
 			possibilite = plateau[f'{i}{j}'].cases_possibles(plateau)
 			actif = plateau[f"{i}{j}"]
+			actualier_couleurs(buttons_cases, possibilite)
 	else:
 		if f"{i}{j}" in possibilite:
 			deplacer(plateau, buttons_cases, actif, i, j)
@@ -64,6 +64,7 @@ def appel_bouton(plateau, i, j): #Fonction appelé lors d'un clic sur un bouton,
 			if plateau[f'{i}{j}'] != None:
 				possibilite = plateau[f'{i}{j}'].cases_possibles(plateau)
 				actif = plateau[f"{i}{j}"]
+				actualier_couleurs(buttons_cases, possibilite)
 
 	# On regarde si la case est vide dans une liste plateau. Si elle est pleine, on appele la pièce correspondante
 
@@ -127,4 +128,7 @@ placement_pieces() #mise en place des pièces (sans affichage)
 actualiser(plateau, buttons_cases) #Affiche les pièces
 #p_test = plateau["11"].cases_possibles(plateau)
 #print(p_test)
+
+
+
 fen.mainloop()
