@@ -1,7 +1,7 @@
 from tkinter import *
 from PIL import Image
 from PIL import ImageTk
-
+import classes
 
 
 #------------------------ceci est la partie affichege---------------------------
@@ -29,8 +29,6 @@ def actualier_couleurs(buttons_cases, possibilites):
 		else:
 			buttons_cases[case].bouton["bg"] = buttons_cases[case].couleur_cases()
 
-
-
 def obtenir_image(chemin):
 	img = Image.open(chemin)
 	img = img.resize((50, 50))
@@ -43,6 +41,9 @@ def deplacer(plateau, buttons_cases, piece, i, j):
 	piece.i = i
 	piece.j = j
 	piece.deplace = True
+	if type(piece) == classes.Pion: #Promotion
+		if i == 0 or i == 7:
+			piece = classes.Dame(piece.equipe, i, j)
 	plateau[f'{i}{j}'] = piece #Met la pièce à sa nouvelle coodonnée
 	actualiser_deux_pieces(plateau, buttons_cases, i0, j0, piece)
 	actualier_couleurs(buttons_cases, [])
