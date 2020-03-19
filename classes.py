@@ -107,25 +107,15 @@ class Roi():
 		self.deplace = False
 		self.image = obtenir_image(f"image/roi_{self.equipe}.png")
 
-
 	def cases_possibles(self, plateau):
-		possibilites = [
-			f'{self.i+1}{self.j}',
-			f'{self.i+1}{self.j-1}',
-			f'{self.i+1}{self.j+1}',
-			f'{self.i}{self.j-1}',
-			f'{self.i}{self.j+1}',
-			f'{self.i-1}{self.j}',
-			f'{self.i-1}{self.j-1}',
-			f'{self.i-1}{self.j+1}',
-		]
-		for e in possibilites:
-			if case_hors_plateau(e):
-				possibilites.remove(e)
-			else:
-				if plateau[e] != None:
-					possibilites.remove(e)
-
+		possibilites = []
+		for i in range(-1, 2):
+			for j in range(-1, 2):
+				if (i, j) != (0, 0):
+					case = (self.i + i, self.j + j)
+					if not case_hors_plateau(case):
+						if plateau[tuple_to_string(case)] == None or plateau[tuple_to_string(case)].equipe != self.equipe:
+							possibilites.append(tuple_to_string(case))
 		return possibilites
 
 
@@ -139,15 +129,26 @@ class Cavalier():
 
 	def cases_possibles(self, plateau):
 		possibilites = []
-		for a in range(1, 2):
-			if plateau[f'{self.i + a}{self.j}'] == None:
-				possibilites.append(f'{self.i + a}{self.j}')
-			if plateau[f'{self.i}{self.j + a}'] == None:
-				possibilites.append(f'{self.i}{self.j + a}')
-			if plateau[f'{self.i - a}{self.j}'] == None:
-				possibilites.append(f'{self.i + a}{self.j}')
-			if plateau[f'{self.i}{self.j - a}'] == None:
-				possibilites.append(f'{self.i}{self.j + a}')
+		i = 2
+		j = 1
+		for a in range(2):
+			i*=-1
+			for b in range(2):
+				j *= -1
+				case = (self.i + i, self.j + j)
+				if not case_hors_plateau(case):
+					if plateau[tuple_to_string(case)] == None or plateau[tuple_to_string(case)].equipe != self.equipe:
+						possibilites.append(tuple_to_string(case))
+		i = 1
+		j = 2
+		for a in range(2):
+			i*=-1
+			for b in range(2):
+				j *= -1
+				case = (self.i + i, self.j + j)
+				if not case_hors_plateau(case):
+					if plateau[tuple_to_string(case)] == None or plateau[tuple_to_string(case)].equipe != self.equipe:
+						possibilites.append(tuple_to_string(case))
 		return possibilites
 
 

@@ -22,7 +22,10 @@ def actualiser_deux_pieces(plateau, buttons_cases, i1, j1, p2):
 def actualier_couleurs(buttons_cases, possibilites):
 	for case in buttons_cases:
 		if case in possibilites:
-			buttons_cases[case].bouton["bg"] = "yellow"
+			if buttons_cases[case].couleur_cases() == "white":
+				buttons_cases[case].bouton["bg"] = "#807474"
+			else:
+				buttons_cases[case].bouton["bg"] = "#403c3c"
 		else:
 			buttons_cases[case].bouton["bg"] = buttons_cases[case].couleur_cases()
 
