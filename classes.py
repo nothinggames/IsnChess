@@ -62,7 +62,7 @@ class Fou():
 	def __init__(self, equipe, i, j):
 		self.equipe = equipe
 		self.i = i
-		self.j = j,
+		self.j = j
 		self.deplace = False
 		self.image = obtenir_image(f"image/fou_{self.equipe}.png")
 
@@ -153,7 +153,6 @@ class Cavalier():
 
 
 def obtenir_possibilites(plateau, i, j, a, b):
-	coords = (i, j)
 	n = 0
 	m = 0
 	possibilites = []
