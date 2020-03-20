@@ -60,3 +60,17 @@ def case_hors_plateau(coord):
 def tuple_to_string(a):
 	return f"{a[0]}{a[1]}"
 
+
+#Sauvegarde de partie
+def sauvegarde_partie(nom, plateau, joueur):
+	with open("parties/" + nom, "w") as fichier:
+		fichier.write(joueur + "\n")
+		for i in range(8):
+			ligne = ""
+			for j in range(8):
+				if plateau[tuple_to_string((i, j))] == None:
+					ligne += "N"
+				else:
+					ligne += plateau[tuple_to_string((i, j))].lettre
+			ligne += "\n"
+			fichier.write(ligne)

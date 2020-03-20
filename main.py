@@ -1,6 +1,7 @@
 from tkinter import *
 from classes import *
 from fonctions import *
+from time import *
 
 class Bouton():#Cette classe sert à créer et stocker chaque bouton avec ses coordonnées (O, i, j). O est situé en bas à gauche de la fenetre
 	#CETTE CLASSE RESTE DANS LE MAIN
@@ -153,7 +154,7 @@ placement_pieces() #mise en place des pièces (sans affichage)
 actualiser(plateau, buttons_cases) #Affiche les pièces
 #p_test = plateau["11"].cases_possibles(plateau)
 #print(p_test)
-
-
+print(time())
+sauvegarde_partie("test.save", plateau, joueur)
 
 fen.mainloop()

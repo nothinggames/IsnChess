@@ -9,6 +9,7 @@ class Pion():
 		self.j = j
 		self.deplace = False
 		self.image = obtenir_image(f"image/pion_{self.equipe}.png")
+		self.lettre = "P"
 		
 	def cases_possibles(self, plateau):
 		if self.equipe == "blanc":
@@ -48,6 +49,7 @@ class Tour():
 		self.j = j
 		self.deplace = False
 		self.image = obtenir_image(f"image/tour_{self.equipe}.png")
+		self.lettre = "T"
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -65,6 +67,7 @@ class Fou():
 		self.j = j
 		self.deplace = False
 		self.image = obtenir_image(f"image/fou_{self.equipe}.png")
+		self.lettre = "F"
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -82,6 +85,7 @@ class Dame():
 		self.j = j
 		self.deplace = False
 		self.image = obtenir_image(f"image/dame_{self.equipe}.png")
+		self.lettre = "D"
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -106,6 +110,7 @@ class Roi():
 		self.j = j
 		self.deplace = False
 		self.image = obtenir_image(f"image/roi_{self.equipe}.png")
+		self.lettre = "R"
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -126,6 +131,7 @@ class Cavalier():
 		self.j = j
 		self.deplace = False
 		self.image = obtenir_image(f"image/cavalier_{self.equipe}.png")
+		self.lettre = "C"
 
 	def cases_possibles(self, plateau):
 		possibilites = []

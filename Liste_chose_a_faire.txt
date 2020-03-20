@@ -1,6 +1,0 @@
-Coté class:
-    Documenter le prog pour la prof.
-    Faire les fonction cases_possibles pour toutes les pièces
-
-Coté terrain:
-    Placer les pièces dans le dictionnaire terrain. (pion: ok, tour: ok)
