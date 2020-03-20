@@ -1,65 +1,70 @@
-import numpy as np
-import tkinter as tk
-import random as rm
+import tkinter as Tkinter
 
-class particle:
-    def __init__(self, p, v, a=np.array([0,10]), colour="blue"):
-        self.shape = canvas.create_oval(p[0]-2, p[1]-2, p[0]+2, p[1]+2, fill = colour)
-        self.p = np.array([float(i) for i in p]) #position
-        self.v =np.array([float(i) for i in v]) #velocity
-        self.oldv = np.copy(v)
-        self.a = np.array([float(i) for i in a]) # accelleration
-        self.colour = colour
+from tkinter import *
 
-    def update(self, delay):
-        self.v += self.a*delay
-        self.p += (self.v*delay)
-        canvas.move(self.shape, self.v[0]*delay, self.v[1]*delay)
+class NoBorderWindow(Tk):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.little = Tk()
+        self.little.geometry("0x0")
+        self.little.lift(aboveThis=self)
+        self.little.bind("<Map>", self.apparition)
+        self.little.bind("<Unmap>", self.disparition)
+        self.overrideredirect(True)
+        self.lift()
+        self.attributes('-topmost', True)
 
-        if not 0<self.p[0]<800: #keeps it within boundaries
-            self.v *= np.array([-1,1])
-        if not 0<self.p[1]<400:
-            self.v *= np.array([1,-1])
+        self.background_image = PhotoImage(file="background.png")
+        menu = Canvas(self, border=-5, background="black", width=self.background_image.width(), height=self.background_image.height())
+        menu.create_image(0, 0, image=self.background_image, anchor=NW)
+        menu.pack(fill=BOTH)
 
-    def collide(self, other):
-        x = self.p-other.p
-        mag = np.sqrt(x.dot(x)) # checks distance
-        if 0<mag<4:
-            self.oldv = np.copy(self.v)
-            x /= mag
+        centrer_fenetre(self.little)
+        centrer_fenetre(self)
 
-            inline = x*x.dot(self.v)
-            inlineo = x*x.dot(other.oldv)
 
-            self.v -= inline - inlineo
 
-#---------------------------------------------------------------------------------
 
-def main():
-    [i.update(Time_per_frame) for i in particles]
+    def apparition(self, e):
+        self.wm_deiconify()
+        self.lift()
+    def disparition(self, e):
+        self.wm_withdraw()
+        self.lift()
 
-    [[j.collide(i) for i in particles] for j in particles]
+def centrer_fenetre(fen):
+    fen.update_idletasks()
+    width = fen.winfo_width()
+    height = fen.winfo_height()
+    x = (fen.winfo_screenwidth() // 2) - (width // 2)
+    y = (fen.winfo_screenheight() // 2) - (height // 2)
+    fen.geometry('{}x{}+{}+{}'.format(width, height, x, y))
 
-    canvas.after(int(Time_per_frame*1000),main)
+class App:
+    def __init__(self):
+        self.root = Tkinter.Tk()
+        self.root.geometry("0x0")
+        fen = self.root
+        positionRight = int(fen.winfo_screenwidth() / 3 - fen.winfo_reqwidth() / 3)
+        positionDown = int(fen.winfo_screenheight() / 3 - fen.winfo_reqheight() / 2)
+        fen.geometry("+{}+{}".format(positionRight, positionDown))
+        self.window = Tkinter.Toplevel()
+        fen = self.window
+        fen.geometry("100x100")
+        positionRight = int(fen.winfo_screenwidth() / 3 - fen.winfo_reqwidth() / 3)
+        positionDown = int(fen.winfo_screenheight() / 3 - fen.winfo_reqheight() / 2)
+        fen.geometry("+{}+{}".format(positionRight, positionDown))
+        fen.lift
+        self.window.overrideredirect(True)
+        Tkinter.Label(self.window, text="Additional window").pack()
+        self.root.bind("<Unmap>", self.OnUnMap)
+        self.root.bind("<Map>", self.OnMap)
+        self.root.mainloop()
+    def OnMap(self, e):
+        self.window.wm_deiconify()
+    def OnUnMap(self, e):
+        self.window.wm_withdraw()
 
-#---------------------------------------------------------------------------------
-#creates the window
-root = tk.Tk()
-root.title("Ball Bouncer")
-root.resizable(False,False)
-canvas = tk.Canvas(root, width = 800, height = 400)
-canvas.pack()
-canvas.config(bg="white")
-
-#---------------------------------------------------------------------------------
-#set variables
-Time_per_frame = 0.02
-NoParticles = 100
-particles = [particle([rm.randint(100,700),rm.randint(100,300)], [rm.randint(-100,100),rm.randint(-100,100)],[0,0]) for i in range(100)]
-#particles = [particle([50,53],[50,0],[0,0]),particle([150,50],[-50,0],[0,0])]
-
-#---------------------------------------------------------------------------------
-
-main()
-
-root.mainloop()
+app = NoBorderWindow()
+app.little.title("Chesscraft")
+app.mainloop()
