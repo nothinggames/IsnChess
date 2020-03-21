@@ -10,7 +10,7 @@ class Bouton():#Cette classe sert à créer et stocker chaque bouton avec ses co
 		self.j = j #j correspond au numéro de la colone
 		self.bouton = Button(frame_plateau, background=self.couleur_cases(), command=lambda: appel_bouton(plateau, self.i, self.j),
 						width=10, height=5, image="", bd=0,
-							 activebackground=self.couleur_cases(), relief=RIDGE) #Chaque case est un bouton qui appel la fonction appel_bouton(i, j)
+							 activebackground=self.couleur_cases(), relief=SUNKEN) #Chaque case est un bouton qui appel la fonction appel_bouton(i, j)
 		#self.bouton.bind("<Enter>", self.bouton_entree)
 		#self.bouton.bind("<Leave>", self.bouton_sortie)
 		self.bouton_grid()
