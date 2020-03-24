@@ -3,7 +3,7 @@ from PIL import Image
 from PIL import ImageTk
 import gatienClasses
 
-"""Tout ce qui commence par gatien est en cours de modif, ce n'est pas une vertion finale. Ne le modifiez pas (sinon le git bug)"""
+"""Tout ce qui commence par gatien est en cours de modification, ce n'est pas une vertion finale. Ne le modifiez pas (sinon le git bug)"""
 
 # ------------------------ceci est la partie affichege---------------------------
 
