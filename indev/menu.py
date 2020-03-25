@@ -2,7 +2,7 @@ import os
 from tkinter import *
 from tkinter import filedialog
 
-from quiche import *
+from echec import *
 
 class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui apparaissent tout de même dans la barre de tâches
 	def __init__(self, *args, **kwargs):
@@ -17,7 +17,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.lift() #On la fait passer au premier plan
 		self.attributes('-topmost', True) #On ajoute un attribut pour toujours la laisser au premier plan
 
-		self.background_image = PhotoImage(file="background2.png")
+		self.background_image = PhotoImage(file="images/fond.png")
 		self.canvas = Canvas(self, border=-5, background="black", width=self.background_image.width(), height=self.background_image.height())
 		self.canvas.create_image(0, 0, image=self.background_image, anchor=NW)
 		self.canvas.grid(row=1, column=0)
@@ -46,7 +46,6 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.bouton_activebg = "#292826"
 		self.bouton_activefg = "#737270"
 		self.boutons = []
-		self.boutons_cases = {}
 		self.boutons.append(Button(self, text="Nouvelle Partie", bg=self.bouton_bg, fg=self.bouton_fg, activebackground=self.bouton_activebg, activeforeground=self.bouton_activefg, width=width, font=font, command=self.ouvrir_nouvelle, border=0, relief=SUNKEN))
 		self.boutons.append(Button(self, text="Charger une Partie", bg=self.bouton_bg, fg=self.bouton_fg, activebackground=self.bouton_activebg, activeforeground=self.bouton_activefg, width=width, font=font, command=self.ouvrir_charger, border=0, relief=SUNKEN))
 		self.boutons.append(Button(self, text="Quitter", bg=self.bouton_bg, fg=self.bouton_fg, activebackground=self.bouton_activebg, activeforeground=self.bouton_activefg, width=width, font=font, command=self.little.quit, border=0, relief=SUNKEN))
@@ -56,6 +55,10 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.b1 = self.canvas.create_window(self.canvas.winfo_width()//2, self.canvas.winfo_height()//2-self.canvas.winfo_height()//5, window=self.boutons[0], anchor=CENTER)
 		self.b2 = self.canvas.create_window(self.canvas.winfo_width()//2, self.canvas.winfo_height()//2, window=self.boutons[1], anchor=CENTER)
 		self.b3 = self.canvas.create_window(self.canvas.winfo_width()//2, self.canvas.winfo_height()//2+self.canvas.winfo_height()//5, window=self.boutons[2], anchor=CENTER)
+
+		self.boutons_cases = {}
+		self.couleur_case_noire = "#222324"
+		self.couleur_case_blanche = "white"
 
 	def apparition(self, e):
 		self.wm_deiconify()
