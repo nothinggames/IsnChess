@@ -16,7 +16,7 @@ class Case():
 		self.canvas.bind("<Button-1>", self.click)
 		self.id = fen.canvas.create_window(j*width, fen.canvas.winfo_height()-i*height, window=self.canvas, anchor=SW)
 
-	def couleur_cases(self): #Définit si une case est noir ou blanche selon sa position
+	def couleur_cases(self): #Définit si une case est n ou blanche selon sa position
 		if self.i%2 == 0 and self.j%2 == 0:
 			return self.fen.couleur_case_noire
 		elif self.i%2 != 0 and self.j%2 != 0:
@@ -44,10 +44,16 @@ class Case():
 		fen = self.fen
 		i, j = self.i, self.j
 		if fen.partie["possibilites"] == []:
+			print("OK 2")
 			if fen.partie["plateau"][tuple_to_string((i, j))] != None and fen.partie["plateau"][tuple_to_string((i, j))].equipe == fen.partie["joueur"]:
 				fen.partie["possibilites"] = fen.partie["plateau"][tuple_to_string((i, j))].cases_possibles(fen.partie["plateau"])
 				fen.partie["actif"] = fen.partie["plateau"][tuple_to_string((i, j))]
+			else:
+				print(fen.partie["plateau"][tuple_to_string((i, j))])
+				print("#", fen.partie["plateau"][tuple_to_string((i, j))].equipe)
+				print("##", fen.partie["joueur"])
 		else:
+			print(("OK 3"))
 			if tuple_to_string((i, j)) in fen.partie["possibilites"]:
 				fen.partie["possibilites"] = []
 				deplacer(fen, fen.partie["actif"], i, j)
@@ -76,36 +82,58 @@ def nouvelle_partie(fen, type):
 	afficher_partie(fen)
 
 def charger_partie(fen, fichier):
-	print(fen, fichier)
+	fen.partie = {}
 	if fichier != "":
 		fen.partie["plateau"] = {}
-		with open(fichier + nom, "w") as fichier:
+		with open(fichier, "r") as fichier:
 			lignes = fichier.readlines()
 			for i in range(8):
-				cases = lignes[i].split("")
+				cases = lignes[i].split()
 				for j in range(8):
 					if cases[j] == "N":
 						piece = None
-					#elif cases[j] == "P": #PROBLEME: LES COULEURS NE SONT PAS SAUVEGARDEES !
-						#piece = Pion()
+					elif cases[j] == "P":
+						piece = Pion(cases[j+8], i, j)
+					elif cases[j] == "T":
+						piece = Tour(cases[j+8], i, j)
+					elif cases[j] == "C":
+						piece = Cavalier(cases[j+8], i, j)
+					elif cases[j] == "F":
+						piece = Fou(cases[j+8], i, j)
+					elif cases[j] == "D":
+						piece = Dame(cases[j+8], i, j)
+					elif cases[j] == "R":
+						piece = Roi(cases[j+8], i, j)
 					fen.partie["plateau"][tuple_to_string((i, j))] = piece
+			fen.partie["type"] = lignes[8]
+			fen.partie["actif"] = None
+			fen.partie["joueur"] = lignes[9]
+			fen.partie["tour"] = lignes[10]
+			fen.partie["debut"] = time()-float(lignes[11])
+			fen.partie["possibilites"] = []
+			afficher_partie(fen)
+
 
 """Gestion des parties"""
 def sauvegarde_partie(nom, partie):
 	with open("parties/" + nom, "w") as fichier:
 		for i in range(8):
-			ligne = ""
+			ligne_1 = ""
+			ligne_2 = ""
 			for j in range(8):
 				if partie["plateau"][tuple_to_string((i, j))] == None:
-					ligne += "N"
+					ligne_1 += "N "
+					ligne_2 += "N "
 				else:
-					ligne += partie["plateau"][tuple_to_string((i, j))].lettre
+					ligne_1 += partie["plateau"][tuple_to_string((i, j))].lettre + " "
+					ligne_2 += partie["plateau"][tuple_to_string((i, j))].equipe + " "
+			ligne = ligne_1+ligne_2
 			ligne += "\n"
 			fichier.write(ligne)
 		fichier.write(partie["type"] + "\n")
 		fichier.write(partie["joueur"] + "\n")
 		fichier.write(str(partie["tour"]) + "\n")
-		fichier.write(str(partie["debut"]) + "\n")
+		fichier.write(str(time()-partie["debut"]) + "\n")
 
 def quitter_partie(fen):
 	sauvegarde_partie("test.save", fen.partie)

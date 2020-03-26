@@ -91,7 +91,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.boutons[2]["command"] = self.ouvrir_accueil
 
 	def ouvrir_charger(self):
-		charger_partie(self, filedialog.askopenfilename(initialdir=os.getcwd()+"/parties", title="Choisissez une partie",
+		charger_partie(self._root(), filedialog.askopenfilename(initialdir=os.getcwd()+"/parties", title="Choisissez une partie",
 								   filetypes=[("Sauvegarde de partie", "*.save")]))
 
 	def entree_bouton(self, e):
