@@ -1,5 +1,6 @@
 from tkinter import *
-from fonctions import *
+from PIL import Image
+from PIL import ImageTk
 
 #Pion terminé à 95%, il manque la promotion
 class Pion():
@@ -175,4 +176,20 @@ def obtenir_possibilites(plateau, i, j, a, b):
 				possibilites.append(tuple_to_string(case))
 			return possibilites
 
+"""Fonctions utilitaires"""
+def tuple_to_string(a):
+	return f"{a[0]}{a[1]}"
 
+def obtenir_image(chemin):
+	img = Image.open(chemin)
+	img = img.resize((50, 50))
+	photoImg = ImageTk.PhotoImage(img)
+	return photoImg
+
+def case_hors_plateau(coord):
+	i=coord[0]
+	j=coord[1]
+	if i < 0 or i>7 or j<0 or j>7:
+		return True
+	else:
+		return False

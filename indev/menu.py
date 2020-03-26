@@ -18,8 +18,8 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.attributes('-topmost', True) #On ajoute un attribut pour toujours la laisser au premier plan
 
 		self.background_image = PhotoImage(file="images/fond.png")
-		self.canvas = Canvas(self, border=-5, background="black", width=self.background_image.width(), height=self.background_image.height())
-		self.canvas.create_image(0, 0, image=self.background_image, anchor=NW)
+		self.canvas = Canvas(self, border=-5, background="#303236", width=self.background_image.width(), height=self.background_image.height())
+
 		self.canvas.grid(row=1, column=0)
 
 		self.barre_outils = Frame(self, background="#292626")
@@ -39,6 +39,23 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		centrer_fenetre(self.little)
 		centrer_fenetre(self)
 
+		self.afficher_accueil()
+
+		self.boutons_cases = {}
+		self.affichage = {}
+		self.affichage_id = {}
+		self.couleur_case_noire = "#222324"
+		self.couleur_case_blanche = "white"
+
+	def apparition(self, e):
+		self.wm_deiconify()
+		self.lift()
+	def disparition(self, e):
+		self.wm_withdraw()
+		self.lift()
+
+	def afficher_accueil(self):
+		self.canvas.create_image(0, 0, image=self.background_image, anchor=NW)
 		font = "Helvetica 20"
 		width = 20
 		self.bouton_bg = "#1f1e1d"
@@ -56,16 +73,6 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.b2 = self.canvas.create_window(self.canvas.winfo_width()//2, self.canvas.winfo_height()//2, window=self.boutons[1], anchor=CENTER)
 		self.b3 = self.canvas.create_window(self.canvas.winfo_width()//2, self.canvas.winfo_height()//2+self.canvas.winfo_height()//5, window=self.boutons[2], anchor=CENTER)
 
-		self.boutons_cases = {}
-		self.couleur_case_noire = "#222324"
-		self.couleur_case_blanche = "white"
-
-	def apparition(self, e):
-		self.wm_deiconify()
-		self.lift()
-	def disparition(self, e):
-		self.wm_withdraw()
-		self.lift()
 
 	def ouvrir_accueil(self):
 		self.boutons[0]["text"] = "Nouvelle Partie"
@@ -95,7 +102,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 			color = "#960d03"
 		elif e.widget == self.bouton_reduire:
 			color = "#292626"
-		elif e.widget in self.boutons:
+		else:
 			color = self.bouton_bg
 		if color != None:
 			e.widget["bg"] = color
