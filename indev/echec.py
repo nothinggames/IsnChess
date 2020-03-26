@@ -16,7 +16,7 @@ class Case():
 		self.canvas.bind("<Button-1>", self.click)
 		self.id = fen.canvas.create_window(j*width, fen.canvas.winfo_height()-i*height, window=self.canvas, anchor=SW)
 
-	def couleur_cases(self): #Définit si une case est noir ou blanche selon sa position
+	def couleur_cases(self): #Définit si une case est noire ou blanche selon sa position
 		if self.i%2 == 0 and self.j%2 == 0:
 			return self.fen.couleur_case_noire
 		elif self.i%2 != 0 and self.j%2 != 0:
@@ -44,16 +44,10 @@ class Case():
 		fen = self.fen
 		i, j = self.i, self.j
 		if fen.partie["possibilites"] == []:
-			print("OK 2")
 			if fen.partie["plateau"][tuple_to_string((i, j))] != None and fen.partie["plateau"][tuple_to_string((i, j))].equipe == fen.partie["joueur"]:
 				fen.partie["possibilites"] = fen.partie["plateau"][tuple_to_string((i, j))].cases_possibles(fen.partie["plateau"])
 				fen.partie["actif"] = fen.partie["plateau"][tuple_to_string((i, j))]
-			else:
-				print(fen.partie["plateau"][tuple_to_string((i, j))])
-				print("#", fen.partie["plateau"][tuple_to_string((i, j))].equipe)
-				print("##", fen.partie["joueur"])
 		else:
-			print(("OK 3"))
 			if tuple_to_string((i, j)) in fen.partie["possibilites"]:
 				fen.partie["possibilites"] = []
 				deplacer(fen, fen.partie["actif"], i, j)
@@ -107,8 +101,8 @@ def charger_partie(fen, fichier):
 					fen.partie["plateau"][tuple_to_string((i, j))] = piece
 			fen.partie["type"] = lignes[8]
 			fen.partie["actif"] = None
-			fen.partie["joueur"] = lignes[9]
-			fen.partie["tour"] = lignes[10]
+			fen.partie["joueur"] = lignes[9].replace("\n", "")
+			fen.partie["tour"] = int(lignes[10])
 			fen.partie["debut"] = time()-float(lignes[11])
 			fen.partie["possibilites"] = []
 			afficher_partie(fen)
@@ -133,10 +127,10 @@ def sauvegarde_partie(nom, partie):
 		fichier.write(partie["type"] + "\n")
 		fichier.write(partie["joueur"] + "\n")
 		fichier.write(str(partie["tour"]) + "\n")
-		fichier.write(str(time()-partie["debut"]) + "\n")
+		fichier.write(str(time()-partie["debut"]))
 
 def quitter_partie(fen):
-	sauvegarde_partie("test.save", fen.partie)
+	sauvegarde_partie(strftime("%d_%m_%y_%H_%M_%S.save", localtime()), fen.partie)
 	fen.canvas.delete("all")
 	fen.afficher_accueil()
 
