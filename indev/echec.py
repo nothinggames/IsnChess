@@ -62,6 +62,15 @@ class Case():
 				else:
 					fen.partie["possibilites"] = []
 					fen.partie["actif"] = None
+
+		if fen.partie["actif"] == 42: #Ne fonctionne pas actuellement
+			i, j = fen.partie["actif"].i, fen.partie["actif"].j
+			for p in fen.partie["possibilites"]:
+				plateau = fen.partie["plateau"].copy()
+				plateau[p] = plateau[tuple_to_string((i, j))]
+				plateau[tuple_to_string((i, j))] = None
+				if est_echec(plateau) != None:
+					print("echec !")
 		afficher_possibilites(fen)
 
 """Fonctions de parties"""
@@ -185,6 +194,7 @@ def deplacer(fen, piece, i, j):
 	fen.boutons_cases[tuple_to_string((i0, j0))].placer_piece(fen.partie["plateau"][tuple_to_string((i0, j0))])
 	fen.boutons_cases[tuple_to_string((i, j))].placer_piece(fen.partie["plateau"][tuple_to_string((i, j))])
 	piece.i, piece.j = i, j
+	#print(est_echec(fen.partie["plateau"]))
 
 def passer_tour(fen):
 	if fen.partie["joueur"] == "blanc":
@@ -237,6 +247,7 @@ class Popup_sauvegarde(Canvas):
 		self.entree_var.trace_add("write", self.actualiser)
 
 		self.entree = Entry(self, textvariable=self.entree_var, font="Helvetica 16", width=30, justify=CENTER)
+		self.entree.focus_set()
 		self.bouton_valider = Button(self, text="Valider", command=self.valider, bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 16", border=0, relief=SUNKEN)
 		self.bouton_annuler = Button(self, text="Annuler", command=self.destroy, bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 16", border=0, relief=SUNKEN)
 
@@ -258,11 +269,11 @@ class Popup_sauvegarde(Canvas):
 			sauvegarder_partie(nom, self._root().partie)
 			quitter_partie(self._root())
 			if self.fermer:
-				self._root().quit()
+				self._root().little.quit()
 		elif validation == "Attention: vous allez quitter sans sauvegarder !":
 			quitter_partie(self._root())
 			if self.fermer:
-				self._root().quit()
+				self._root().little.quit()
 
 	def actualiser(self, a, b, c):
 		fichier = self.entree_var.get()
@@ -283,7 +294,6 @@ class Popup_sauvegarde(Canvas):
 					message = "Nom valide."
 		return message
 
-
 	def afficher(self, fermer):
 		self.fermer = fermer
 		if self._root().affichage_id["popup"] != None:
@@ -293,3 +303,13 @@ class Popup_sauvegarde(Canvas):
 
 def afficher_input_sauvegarde(fen, fermer=False): #Sert à afficher la fenêtre de demande de sauvegarde
 	Popup_sauvegarde(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//2, bg="#3d3937", border=0, highlightthickness=0).afficher(fermer)
+
+
+"""Fonctions d'échec et mat"""
+def est_echec(plateau):
+	for case in plateau:
+		if plateau[case] != None:
+			for p in plateau[case].cases_possibles(plateau):
+				if type(plateau[p]) == classes.Roi:
+					return plateau[p].equipe
+	return None

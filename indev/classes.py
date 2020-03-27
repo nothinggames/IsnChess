@@ -172,7 +172,7 @@ def obtenir_possibilites(plateau, i, j, a, b):
 		if plateau[tuple_to_string(case)] == None:
 			possibilites.append(tuple_to_string(case))
 		else:
-			if plateau[tuple_to_string(case)].equipe != plateau[f"{i}{j}"].equipe:
+			if plateau[tuple_to_string(case)].equipe != plateau[tuple_to_string((i, j))].equipe:
 				possibilites.append(tuple_to_string(case))
 			return possibilites
 
