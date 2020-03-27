@@ -111,9 +111,14 @@ def charger_partie(fen, fichier):
 					fen.partie["plateau"][tuple_to_string((i, j))] = piece
 			fen.partie["type"] = lignes[8]
 			fen.partie["actif"] = None
-			fen.partie["joueur"] = lignes[9].replace("\n", "")
-			fen.partie["tour"] = int(lignes[10])
-			fen.partie["debut"] = time()-float(lignes[11])
+			l = 0
+			for e in lignes:
+				print(e)
+				if e == "\n":
+					l+=1
+			fen.partie["joueur"] = lignes[9+l].replace("\n", "")
+			fen.partie["tour"] = int(lignes[10+l])
+			fen.partie["debut"] = time()-float(lignes[11+l])
 			fen.partie["possibilites"] = []
 			afficher_partie(fen)
 
