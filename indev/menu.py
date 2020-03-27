@@ -18,8 +18,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.attributes('-topmost', True) #On ajoute un attribut pour toujours la laisser au premier plan
 
 		self.background_image = PhotoImage(file="images/fond.png")
-		self.canvas = Canvas(self, border=-5, background="#303236", width=self.background_image.width(), height=self.background_image.height())
-
+		self.canvas = Canvas(self, border=0, highlightthickness=0, background="#303236", width=self.background_image.width(), height=self.background_image.height())
 		self.canvas.grid(row=1, column=0)
 
 		self.barre_outils = Frame(self, background="#292626")
@@ -29,7 +28,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.bouton_reduire.grid(row=0, column=1)
 		self.bouton_fermer = Button(self.barre_outils, width=3, height=1, bg="#960d03", activebackground="#6e0a02", text="x", font="Helvetica 10 bold", fg="white", activeforeground="white", border=0, relief=SUNKEN, command=self.quit)
 		self.bouton_fermer.grid(row=0, column=2)
-		self.barre_outils_vide = Canvas(self.barre_outils, width=self.background_image.width()-40-20, height=0, background=self.barre_outils["bg"], border=-5).grid(row=0, column=0)
+		self.barre_outils_vide = Canvas(self.barre_outils, width=self.background_image.width()-40-20, height=0, background=self.barre_outils["bg"], border=0, highlightthickness=0).grid(row=0, column=0)
 
 		self.bouton_reduire.bind("<Enter>", self.entree_bouton)
 		self.bouton_reduire.bind("<Leave>", self.sortie_bouton)
@@ -44,6 +43,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.boutons_cases = {}
 		self.affichage = {}
 		self.affichage_id = {}
+		self.affichage_id["popup"] = None
 		self.couleur_case_noire = "#222324"
 		self.couleur_case_blanche = "white"
 
@@ -55,6 +55,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.lift()
 
 	def afficher_accueil(self):
+		self.bouton_fermer["command"] = self.quit
 		self.canvas.create_image(0, 0, image=self.background_image, anchor=NW)
 		font = "Helvetica 20"
 		width = 20

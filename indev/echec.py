@@ -1,5 +1,6 @@
 from tkinter import *
 from time import *
+from os import path
 
 import classes
 from classes import *
@@ -107,10 +108,8 @@ def charger_partie(fen, fichier):
 			fen.partie["possibilites"] = []
 			afficher_partie(fen)
 
-
-"""Gestion des parties"""
-def sauvegarde_partie(nom, partie):
-	with open("parties/" + nom, "w") as fichier:
+def sauvegarder_partie(nom, partie):
+	with open("parties/" + nom + ".save", "w") as fichier:
 		for i in range(8):
 			ligne_1 = ""
 			ligne_2 = ""
@@ -130,7 +129,6 @@ def sauvegarde_partie(nom, partie):
 		fichier.write(str(time()-partie["debut"]))
 
 def quitter_partie(fen):
-	sauvegarde_partie(strftime("%d_%m_%y_%H_%M_%S.save", localtime()), fen.partie)
 	fen.canvas.delete("all")
 	fen.afficher_accueil()
 
@@ -201,6 +199,7 @@ def passer_tour(fen):
 def afficher_partie(fen):
 	afficher_plateau(fen, fen.partie["plateau"])
 	afficher_infos(fen)
+	fen.bouton_fermer["command"] = lambda: afficher_input_sauvegarde(fen, True)
 
 def afficher_plateau(fen, plateau):
 	fen.canvas.delete("all")
@@ -217,7 +216,7 @@ def afficher_possibilites(fen):
 			fen.boutons_cases[case].possibilite(False)
 
 def afficher_infos(fen):
-	fen.affichage["bouton_menu"] = Button(fen, text="Quitter", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: quitter_partie(fen), border=0, relief=SUNKEN)
+	fen.affichage["bouton_menu"] = Button(fen, text="Quitter", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: afficher_input_sauvegarde(fen), border=0, relief=SUNKEN)
 	fen.affichage["bouton_menu"].bind("<Enter>", fen.entree_bouton)
 	fen.affichage["bouton_menu"].bind("<Leave>", fen.sortie_bouton)
 	fen.affichage_id["bouton_menu"] = fen.canvas.create_window(fen.canvas.winfo_width() - 50, fen.canvas.winfo_height() - 50, window=fen.affichage["bouton_menu"], anchor=CENTER)
@@ -228,3 +227,69 @@ def afficher_infos(fen):
 def actualiser_affichage(fen):
 	fen.canvas.itemconfig(fen.affichage_id["text_joueur"], text="Tour du joueur " + fen.partie["joueur"])
 	fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="Tour n°" + str(fen.partie["tour"]))
+
+class Popup_sauvegarde(Canvas):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		fen = self._root()
+		self.fermer = False #Définit si l'app doit se fermer lors de sa validation
+		self.entree_var = StringVar()
+		self.entree_var.trace_add("write", self.actualiser)
+
+		self.entree = Entry(self, textvariable=self.entree_var, font="Helvetica 16", width=30, justify=CENTER)
+		self.bouton_valider = Button(self, text="Valider", command=self.valider, bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 16", border=0, relief=SUNKEN)
+		self.bouton_annuler = Button(self, text="Annuler", command=self.destroy, bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 16", border=0, relief=SUNKEN)
+
+		self.bouton_valider.bind("<Enter>", fen.entree_bouton)
+		self.bouton_valider.bind("<Leave>", fen.sortie_bouton)
+		self.bouton_annuler.bind("<Enter>", fen.entree_bouton)
+		self.bouton_annuler.bind("<Leave>", fen.sortie_bouton)
+
+		self.create_text(self.winfo_reqwidth()//2, self.winfo_reqheight()//6, text="Entrez le nom de la partie:", font="Helvetica 18", fill=fen.bouton_fg)
+		self.create_window(self.winfo_reqwidth()//2, self.winfo_reqheight()//3, window=self.entree)
+		self.info = self.create_text(self.winfo_reqwidth()//2, self.winfo_reqheight()//2, text="Attention: vous allez quitter sans sauvegarder !", font="Helvetica 16", fill=fen.bouton_fg)
+		self.create_window(self.winfo_reqwidth()//2-self.winfo_reqwidth()//6, self.winfo_reqheight()//1.25, window=self.bouton_valider)
+		self.create_window(self.winfo_reqwidth()//2+self.winfo_reqwidth()//6, self.winfo_reqheight()//1.25, window=self.bouton_annuler)
+
+	def valider(self):
+		nom = self.entree_var.get()
+		validation = self.est_valide(nom)
+		if validation == "Nom valide." or validation == "Attention: vous allez écraser une sauvegarde !":
+			sauvegarder_partie(nom, self._root().partie)
+			quitter_partie(self._root())
+			if self.fermer:
+				self._root().quit()
+		elif validation == "Attention: vous allez quitter sans sauvegarder !":
+			quitter_partie(self._root())
+			if self.fermer:
+				self._root().quit()
+
+	def actualiser(self, a, b, c):
+		fichier = self.entree_var.get()
+		self.itemconfig(self.info, text=self.est_valide(fichier))
+
+	def est_valide(self, fichier):
+		message = ""
+		if fichier == "":
+			message = "Attention: vous allez quitter sans sauvegarder !"
+		else:
+			for char in ["\\", "/", ":", "*", "?", '"', "<", ">"]:
+				if char in fichier:
+					message = "Nom invalide !"
+			if message != "Nom invalide !":
+				if path.exists("parties/" + fichier + ".save"):
+					message = "Attention: vous allez écraser une sauvegarde !"
+				else:
+					message = "Nom valide."
+		return message
+
+
+	def afficher(self, fermer):
+		self.fermer = fermer
+		if self._root().affichage_id["popup"] != None:
+			self._root().canvas.delete(self._root().affichage_id["popup"])
+		self._root().affichage_id["popup"] = self._root().canvas.create_window(self._root().winfo_width()//2, self._root().winfo_height()//2, window=self)
+
+
+def afficher_input_sauvegarde(fen, fermer=False): #Sert à afficher la fenêtre de demande de sauvegarde
+	Popup_sauvegarde(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//2, bg="#3d3937", border=0, highlightthickness=0).afficher(fermer)

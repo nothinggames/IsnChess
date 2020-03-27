@@ -1,8 +1,2 @@
-from time import *
-
-debut = time()
-#sleep(60)
-fin = time() - debut
-
-l = localtime(fin)
-print(strftime("%m:%S", l))
+import os
+print(os.path.exists("parties/26_03_20_20_24_4s7.save"))
