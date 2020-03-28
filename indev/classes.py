@@ -4,11 +4,11 @@ from PIL import ImageTk
 
 #Pion terminé à 95%, il manque la promotion
 class Pion():
-	def __init__(self, equipe, i, j):
+	def __init__(self, equipe, i, j, deplace=False):
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.deplace = False
+		self.deplace = deplace
 		self.image = obtenir_image(f"images/pion_{self.equipe}.png")
 		self.lettre = "P"
 		
@@ -44,11 +44,11 @@ class Pion():
 
 
 class Tour():
-	def __init__(self, equipe, i, j):
+	def __init__(self, equipe, i, j, deplace=False):
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.deplace = False
+		self.deplace = deplace
 		self.image = obtenir_image(f"images/tour_{self.equipe}.png")
 		self.lettre = "T"
 
@@ -62,11 +62,11 @@ class Tour():
 
 
 class Fou():
-	def __init__(self, equipe, i, j):
+	def __init__(self, equipe, i, j, deplace=False):
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.deplace = False
+		self.deplace = deplace
 		self.image = obtenir_image(f"images/fou_{self.equipe}.png")
 		self.lettre = "F"
 
@@ -80,11 +80,11 @@ class Fou():
 
 
 class Dame():
-	def __init__(self, equipe, i, j):
+	def __init__(self, equipe, i, j, deplace=False):
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.deplace = False
+		self.deplace = deplace
 		self.image = obtenir_image(f"images/dame_{self.equipe}.png")
 		self.lettre = "D"
 
@@ -105,11 +105,11 @@ class Dame():
 
 
 class Roi():
-	def __init__(self, equipe, i, j):
+	def __init__(self, equipe, i, j, deplace=False):
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.deplace = False
+		self.deplace = deplace
 		self.image = obtenir_image(f"images/roi_{self.equipe}.png")
 		self.lettre = "R"
 
@@ -126,11 +126,11 @@ class Roi():
 
 
 class Cavalier():
-	def __init__(self, equipe, i, j):
+	def __init__(self, equipe, i, j, deplace=False):
 		self.equipe = equipe
 		self.i = i
 		self.j = j
-		self.deplace = False
+		self.deplace = deplace
 		self.image = obtenir_image(f"images/cavalier_{self.equipe}.png")
 		self.lettre = "C"
 

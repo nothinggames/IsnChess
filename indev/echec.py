@@ -38,7 +38,7 @@ class Case():
 			self.image_possibilite = None
 		if p == True:
 			size = 10
-			self.image_possibilite = self.canvas.create_oval(self.canvas.winfo_reqwidth()//2-size, self.canvas.winfo_reqheight()//2-size, self.canvas.winfo_reqwidth()//2+size, self.canvas.winfo_reqheight()//2+size, fill="yelloW")
+			self.image_possibilite = self.canvas.create_oval(self.canvas.winfo_reqwidth()//2-size, self.canvas.winfo_reqheight()//2-size, self.canvas.winfo_reqwidth()//2+size, self.canvas.winfo_reqheight()//2+size, fill="#857c1b")
 
 
 	def click(self, e):
@@ -63,7 +63,7 @@ class Case():
 					fen.partie["possibilites"] = []
 					fen.partie["actif"] = None
 
-		if fen.partie["actif"] == 42: #Ne fonctionne pas actuellement
+		if fen.partie["actif"] == 42: #Cette partie est désactivée car elle ne fonctionne pas actuellement
 			i, j = fen.partie["actif"].i, fen.partie["actif"].j
 			for p in fen.partie["possibilites"]:
 				plateau = fen.partie["plateau"].copy()
@@ -97,23 +97,22 @@ def charger_partie(fen, fichier):
 					if cases[j] == "N":
 						piece = None
 					elif cases[j] == "P":
-						piece = Pion(cases[j+8], i, j)
+						piece = Pion(cases[j+8], i, j, str_to_bool(cases[j+16]))
 					elif cases[j] == "T":
-						piece = Tour(cases[j+8], i, j)
+						piece = Tour(cases[j+8], i, j, str_to_bool(cases[j+16]))
 					elif cases[j] == "C":
-						piece = Cavalier(cases[j+8], i, j)
+						piece = Cavalier(cases[j+8], i, j, str_to_bool(cases[j+16]))
 					elif cases[j] == "F":
-						piece = Fou(cases[j+8], i, j)
+						piece = Fou(cases[j+8], i, j, str_to_bool(cases[j+16]))
 					elif cases[j] == "D":
-						piece = Dame(cases[j+8], i, j)
+						piece = Dame(cases[j+8], i, j, str_to_bool(cases[j+16]))
 					elif cases[j] == "R":
-						piece = Roi(cases[j+8], i, j)
+						piece = Roi(cases[j+8], i, j, str_to_bool(cases[j+16]))
 					fen.partie["plateau"][tuple_to_string((i, j))] = piece
 			fen.partie["type"] = lignes[8]
 			fen.partie["actif"] = None
 			l = 0
-			for e in lignes:
-				print(e)
+			for e in lignes: #Supprime les lignes vides qui apparaissent parfois
 				if e == "\n":
 					l+=1
 			fen.partie["joueur"] = lignes[9+l].replace("\n", "")
@@ -127,14 +126,17 @@ def sauvegarder_partie(nom, partie):
 		for i in range(8):
 			ligne_1 = ""
 			ligne_2 = ""
+			ligne_3 = ""
 			for j in range(8):
 				if partie["plateau"][tuple_to_string((i, j))] == None:
 					ligne_1 += "N "
 					ligne_2 += "N "
+					ligne_3 += "N "
 				else:
 					ligne_1 += partie["plateau"][tuple_to_string((i, j))].lettre + " "
 					ligne_2 += partie["plateau"][tuple_to_string((i, j))].equipe + " "
-			ligne = ligne_1+ligne_2
+					ligne_3 += str(partie["plateau"][tuple_to_string((i, j))].deplace) + " "
+			ligne = ligne_1+ligne_2+ligne_3
 			ligne += "\n"
 			fichier.write(ligne)
 		fichier.write(partie["type"] + "\n")
@@ -186,6 +188,11 @@ def initialiser_pieces(plateau):
 """Fonctions utilitaires"""
 def tuple_to_string(a):
 	return f"{a[0]}{a[1]}"
+
+def str_to_bool(a):
+	if a == "True":
+		return True
+	return False
 
 """Fonctions de jeu"""
 def deplacer(fen, piece, i, j):

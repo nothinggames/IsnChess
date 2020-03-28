@@ -44,7 +44,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.affichage = {}
 		self.affichage_id = {}
 		self.affichage_id["popup"] = None
-		self.couleur_case_noire = "#222324"
+		self.couleur_case_noire = "black"
 		self.couleur_case_blanche = "white"
 
 	def apparition(self, e):
