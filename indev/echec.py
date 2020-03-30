@@ -246,6 +246,15 @@ def afficher_infos(fen):
 	fen.affichage_id["text_tour"] = fen.canvas.create_text(10, 60, text="Tour n°" + str(fen.partie["tour"]), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 
 
+
+	x0 = (fen.canvas.winfo_width() - 100)
+	width = 100//8
+
+	#height = (fen.canvas.winfo_height() - 100) // 8
+
+	fen.canvas.create_rectangle(x0+width, 110, fen.canvas.winfo_width()-width, fen.canvas.winfo_height() - 100)
+
+
 def actualiser_affichage(fen):
 	fen.canvas.itemconfig(fen.affichage_id["text_joueur"], text="Tour du joueur " + fen.partie["joueur"])
 	fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="Tour n°" + str(fen.partie["tour"]))
