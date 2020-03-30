@@ -117,5 +117,5 @@ def centrer_fenetre(fen):
 	fen.geometry('{}x{}+{}+{}'.format(width, height, x, y))
 
 app = Fenetre()
-app.little.title("Chesscraft")
+app.little.title("Echec")
 app.mainloop()
