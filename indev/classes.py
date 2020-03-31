@@ -2,6 +2,21 @@ from tkinter import *
 from PIL import Image
 from PIL import ImageTk
 
+IMAGES = {
+	"P_blanc": "images/pion_blanc.png",
+	"P_noir": "images/pion_noir.png",
+	"T_blanc": "images/tour_blanc.png",
+	"T_noir": "images/tour_noir.png",
+	"F_blanc": "images/fou_blanc.png",
+	"F_noir": "images/fou_noir.png",
+	"D_blanc": "images/dame_blanc.png",
+	"D_noir": "images/dame_noir.png",
+	"R_blanc": "images/roi_blanc.png",
+	"R_noir": "images/roi_noir.png",
+	"C_blanc": "images/cavalier_blanc.png",
+	"C_noir": "images/cavalier_noir.png"
+}
+
 #Pion terminé à 95%, il manque la promotion
 class Pion():
 	def __init__(self, equipe, i, j, deplace=False):
@@ -9,8 +24,9 @@ class Pion():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/pion_{self.equipe}.png")
 		self.lettre = "P"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 		
 	def cases_possibles(self, plateau):
 		if self.equipe == "blanc":
@@ -49,8 +65,9 @@ class Tour():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/tour_{self.equipe}.png")
 		self.lettre = "T"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -67,8 +84,9 @@ class Fou():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/fou_{self.equipe}.png")
 		self.lettre = "F"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -85,8 +103,9 @@ class Dame():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/dame_{self.equipe}.png")
 		self.lettre = "D"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -110,8 +129,9 @@ class Roi():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/roi_{self.equipe}.png")
 		self.lettre = "R"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -131,8 +151,9 @@ class Cavalier():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/cavalier_{self.equipe}.png")
 		self.lettre = "C"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -180,9 +201,9 @@ def obtenir_possibilites(plateau, i, j, a, b):
 def tuple_to_string(a):
 	return f"{a[0]}{a[1]}"
 
-def obtenir_image(chemin):
+def obtenir_image(chemin, width=50, height=50):
 	img = Image.open(chemin)
-	img = img.resize((50, 50))
+	img = img.resize((width, height))
 	photoImg = ImageTk.PhotoImage(img)
 	return photoImg
 

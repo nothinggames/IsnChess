@@ -83,6 +83,8 @@ def nouvelle_partie(fen, type):
 	fen.partie["joueur"] = "blanc"
 	fen.partie["tour"] = 1
 	fen.partie["debut"] = time()
+	fen.partie["pieces_mangees_blanc"] = []
+	fen.partie["pieces_mangees_noir"] = []
 	afficher_partie(fen)
 
 def charger_partie(fen, fichier):
@@ -118,6 +120,8 @@ def charger_partie(fen, fichier):
 			fen.partie["joueur"] = lignes[9+l].replace("\n", "")
 			fen.partie["tour"] = int(lignes[10+l])
 			fen.partie["debut"] = time()-float(lignes[11+l])
+			fen.partie["pieces_mangees_blanc"] = lignes[12+l].split(" ")
+			fen.partie["pieces_mangees_noir"] = lignes[13+l].split(" ")
 			fen.partie["possibilites"] = []
 			afficher_partie(fen)
 
@@ -142,7 +146,9 @@ def sauvegarder_partie(nom, partie):
 		fichier.write(partie["type"] + "\n")
 		fichier.write(partie["joueur"] + "\n")
 		fichier.write(str(partie["tour"]) + "\n")
-		fichier.write(str(time()-partie["debut"]))
+		fichier.write(str(time()-partie["debut"]) + "\n")
+		fichier.write(" ".join(partie["pieces_mangees_blanc"]) + "\n")
+		fichier.write(" ".join(partie["pieces_mangees_noir"]))
 
 def quitter_partie(fen):
 	fen.canvas.delete("all")
@@ -201,6 +207,9 @@ def deplacer(fen, piece, i, j):
 	if type(piece) == classes.Pion: #Promotion
 		if i == 0 or i == 7:
 			piece = classes.Dame(piece.equipe, i, j)
+	if fen.partie["plateau"][tuple_to_string((i, j))] != None:
+		fen.partie[f"pieces_mangees_{fen.partie['plateau'][tuple_to_string((i, j))].equipe}"].append(fen.partie["plateau"][tuple_to_string((i, j))].lettre)
+		fen.affichage["canvas_mangees"].ajouter_image(fen.partie["plateau"][tuple_to_string((i, j))].equipe, fen.partie["plateau"][tuple_to_string((i, j))].image_name)
 	fen.partie["plateau"][tuple_to_string((i, j))] = piece
 	piece.deplace = True
 	fen.boutons_cases[tuple_to_string((i0, j0))].placer_piece(fen.partie["plateau"][tuple_to_string((i0, j0))])
@@ -214,7 +223,7 @@ def passer_tour(fen):
 	else:
 		fen.partie["joueur"] = "blanc"
 		fen.partie["tour"] += 1
-	actualiser_affichage(fen )
+	actualiser_affichage(fen)
 
 
 """Fonctions d'affichage"""
@@ -241,25 +250,39 @@ def afficher_infos(fen):
 	fen.affichage["bouton_menu"] = Button(fen, text="Quitter", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: afficher_input_sauvegarde(fen), border=0, relief=SUNKEN)
 	fen.affichage["bouton_menu"].bind("<Enter>", fen.entree_bouton)
 	fen.affichage["bouton_menu"].bind("<Leave>", fen.sortie_bouton)
-	fen.affichage_id["bouton_menu"] = fen.canvas.create_window(fen.canvas.winfo_width() - 50, fen.canvas.winfo_height() - 50, window=fen.affichage["bouton_menu"], anchor=CENTER)
+	fen.affichage_id["bouton_menu"] = fen.canvas.create_window(fen.canvas.winfo_width() - 50, fen.canvas.winfo_height() - 22, window=fen.affichage["bouton_menu"], anchor=CENTER)
 	fen.affichage_id["text_joueur"] = fen.canvas.create_text(10, 20, text="Tour du joueur " + fen.partie["joueur"], fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 	fen.affichage_id["text_tour"] = fen.canvas.create_text(10, 60, text="Tour n°" + str(fen.partie["tour"]), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 
+	fen.affichage["canvas_mangees"] = PieceMangees(fen, 100-2*100//8, fen.canvas.winfo_height()//1.35)
+	fen.affichage_id["canvas_mangees"] = fen.canvas.create_window(fen.canvas.winfo_width() - 100+100//8, 110, window=fen.affichage["canvas_mangees"].canvas, anchor=NW)
+	fen.after(10, lambda: afficher_mangees(fen)) #Il est necessair d'attendre un peu pour que la fenêtre s'initialise correctement
+
+def afficher_mangees(fen):
+	for piece in fen.partie["pieces_mangees_blanc"]:
+		fen.affichage["canvas_mangees"].ajouter_image("blanc", IMAGES[piece.replace("\n", "") + "_blanc"])
+	for piece in fen.partie["pieces_mangees_noir"]:
+		fen.affichage["canvas_mangees"].ajouter_image("noir", IMAGES[piece.replace("\n", "") + "_noir"])
 
 
-	x0 = (fen.canvas.winfo_width() - 100)
-	width = 100//8
+class PieceMangees():
+	def __init__(self, fen, width, height):
+		self.fen = fen
+		self.canvas = Canvas(fen, width=width, height=height, border=0, highlightthickness=0, bg="#262626")
+		self.pieces = {"blanc": [], "noir": []}
+		self.coords = {"blanc": 0, "noir": self.canvas.winfo_reqwidth()//2}
 
-	#height = (fen.canvas.winfo_height() - 100) // 8
+	def ajouter_image(self, equipe, image):
+		self.pieces[equipe].append(obtenir_image(image, self.canvas.winfo_reqwidth()//2, self.canvas.winfo_reqheight()//15))
+		self.canvas.create_image(self.coords[equipe], (len(self.pieces[equipe]))*self.canvas.winfo_height()//15, anchor=SW, image=self.pieces[equipe][len(self.pieces[equipe])-1])
 
-	fen.canvas.create_rectangle(x0+width, 110, fen.canvas.winfo_width()-width, fen.canvas.winfo_height() - 100)
 
 
 def actualiser_affichage(fen):
 	fen.canvas.itemconfig(fen.affichage_id["text_joueur"], text="Tour du joueur " + fen.partie["joueur"])
 	fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="Tour n°" + str(fen.partie["tour"]))
 
-class Popup_sauvegarde(Canvas):
+class PopupSauvegarde(Canvas):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		fen = self._root()
@@ -323,7 +346,7 @@ class Popup_sauvegarde(Canvas):
 
 
 def afficher_input_sauvegarde(fen, fermer=False): #Sert à afficher la fenêtre de demande de sauvegarde
-	Popup_sauvegarde(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//2, bg="#3d3937", border=0, highlightthickness=0).afficher(fermer)
+	PopupSauvegarde(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//2, bg="#3d3937", border=0, highlightthickness=0).afficher(fermer)
 
 
 """Fonctions d'échec et mat"""
