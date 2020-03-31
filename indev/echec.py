@@ -84,10 +84,28 @@ def nouvelle_partie(fen, type):
 	fen.partie["joueur"] = "blanc"
 	fen.partie["tour"] = 1
 	fen.partie["debut"] = time()
+	if type == "blitz":
+		fen.partie["temps_passe"] = time() + 61 #nb secondes
+		fen.partie["temps_utilise"] = 0
 	fen.partie["temps_enregistre"] = 0
 	fen.partie["pieces_mangees_blanc"] = []
 	fen.partie["pieces_mangees_noir"] = []
 	afficher_partie(fen)
+
+def sauvegarder_partie(nom, partie):
+	with open("parties/" + nom + ".json", "w") as fichier:
+		donnees = {
+			"type": partie["type"],
+			"joueur": partie["joueur"],
+			"tour": partie["tour"],
+			"temps_enregistre": time()-partie["debut"]+partie["temps_enregistre"],
+			"pieces_mangees_blanc": partie[f"pieces_mangees_blanc"],
+			"pieces_mangees_noir": partie[f"pieces_mangees_noir"],
+			"plateau": plateau_to_lettres(partie["plateau"])
+		}
+		if partie["type"] == "blitz":
+			donnees["temps_restant"] = partie["temps_passe"] - time()
+		json.dump(donnees, fichier, indent=4)
 
 def charger_partie(fen, fichier):
 	fen.partie = {}
@@ -107,20 +125,9 @@ def charger_partie(fen, fichier):
 				"actif": None,
 				"possibilites": []
 			}
+			if donnees["type"] == "blitz":
+				fen.partie["temps_passe"] = time() + donnees["temps_utilise"]
 			afficher_partie(fen)
-
-def sauvegarder_partie(nom, partie):
-	with open("parties/" + nom + ".json", "w") as fichier:
-		donnees = {
-			"type": partie["type"],
-			"joueur": partie["joueur"],
-			"tour": partie["tour"],
-			"temps_enregistre": time()-partie["debut"]+partie["temps_enregistre"],
-			"pieces_mangees_blanc": partie[f"pieces_mangees_blanc"],
-			"pieces_mangees_noir": partie[f"pieces_mangees_noir"],
-			"plateau": plateau_to_lettres(partie["plateau"])
-		}
-		json.dump(donnees, fichier, indent=4)
 
 def quitter_partie(fen):
 	fen.canvas.delete("all")
@@ -231,6 +238,8 @@ def passer_tour(fen):
 	else:
 		fen.partie["joueur"] = "blanc"
 		fen.partie["tour"] += 1
+	if fen.partie["type"] == "blitz":
+		fen.partie["temps_passe"] = time() + 61
 	actualiser_affichage(fen)
 
 
@@ -275,7 +284,11 @@ def afficher_infos(fen):
 	fen.affichage_id["text_tour"] = fen.canvas.create_text(10, 60, text="↔ Tour n°" + str(fen.partie["tour"]), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 
 	fen.affichage_id["text_temps_ecoule"] = fen.canvas.create_text(fen.winfo_width()//2, 20, text="⏲ Temps écoulé: 00:00:00", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
-	fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text="⏲ Temps restant: ∞", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	if fen.partie["type"] == "blitz":
+		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(
+		fen.partie["temps_passe"] - time())).replace("{}", "⏲"), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	else:
+		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text="⏲ Temps restant: ∞", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 	fen.after(1000, lambda: actualiser_horloges(fen))
 
 	fen.affichage["canvas_mangees"] = PieceMangees(fen, 100-2*100//8, fen.canvas.winfo_height()//1.35)
@@ -294,7 +307,12 @@ def actualiser_affichage(fen):
 
 def actualiser_horloges(fen):
 	fen.canvas.itemconfig(fen.affichage_id["text_temps_ecoule"], text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(time()-fen.partie["debut"]+fen.partie["temps_enregistre"])).replace("{}", "⏲"))
-	#fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="Tour n°" + str(fen.partie["tour"]))
+	if fen.partie["type"] == "blitz":
+		if fen.partie["temps_passe"] - time() <= 0:
+			passer_tour(fen)
+		fen.canvas.itemconfig(fen.affichage_id["text_temps_restant"], text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(
+			fen.partie["temps_passe"] - time())).replace("{}", "⏲"))
+
 	fen.after(1000, lambda: actualiser_horloges(fen))
 
 class PopupSauvegarde(Canvas):

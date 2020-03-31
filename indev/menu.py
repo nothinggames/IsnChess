@@ -88,7 +88,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.boutons[1]["text"] = "Partie Blitz"
 		self.boutons[2]["text"] = "Retour"
 		self.boutons[0]["command"] = lambda: nouvelle_partie(self._root(), "normale")
-		self.boutons[1]["command"] = lambda: nouvelle_partie(self._root(), "blizt")
+		self.boutons[1]["command"] = lambda: nouvelle_partie(self._root(), "blitz")
 		self.boutons[2]["command"] = self.ouvrir_accueil
 
 	def ouvrir_charger(self):
