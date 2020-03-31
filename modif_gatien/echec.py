@@ -84,10 +84,9 @@ def nouvelle_partie(fen, type):
 	fen.partie["tour"] = 1
 	fen.partie["debut"] = time()
 	fen.partie["time_blizt"] = 0
+	fen.partie["en_cours"] = True
 	if type == "blizt":
 		crono_blizt(fen)
-	else:
-		print(type)
 	afficher_partie(fen)
 
 def charger_partie(fen, fichier):
@@ -114,7 +113,10 @@ def charger_partie(fen, fichier):
 					elif cases[j] == "R":
 						piece = Roi(cases[j+8], i, j, str_to_bool(cases[j+16]))
 					fen.partie["plateau"][tuple_to_string((i, j))] = piece
-			fen.partie["type"] = lignes[8]
+			info_type = lignes[8].split()
+			fen.partie["type"] = info_type[0]
+			fen.partie["time_blizt"] = info_type[1]
+
 			fen.partie["actif"] = None
 			l = 0
 			for e in lignes: #Supprime les lignes vides qui apparaissent parfois
@@ -124,6 +126,9 @@ def charger_partie(fen, fichier):
 			fen.partie["tour"] = int(lignes[10+l])
 			fen.partie["debut"] = time()-float(lignes[11+l])
 			fen.partie["possibilites"] = []
+			fen.partie["en_cours"] = True
+			if fen.partie["type"] == "blizt":
+				crono_blizt(fen)
 			afficher_partie(fen)
 
 def sauvegarder_partie(nom, partie):
@@ -144,7 +149,7 @@ def sauvegarder_partie(nom, partie):
 			ligne = ligne_1+ligne_2+ligne_3
 			ligne += "\n"
 			fichier.write(ligne)
-		fichier.write(partie["type"] + "\n")
+		fichier.write(f'{partie["type"]} {partie["time_blizt"]}' + "\n")
 		fichier.write(partie["joueur"] + "\n")
 		fichier.write(str(partie["tour"]) + "\n")
 		fichier.write(str(time()-partie["debut"]))
@@ -223,13 +228,14 @@ def passer_tour(fen):
 	fen.partie["time_blizt"] = 0
 
 def crono_blizt(fen):
-	fen.partie["time_blizt"] += 1
-	print("ok 1")
-	if fen.partie["time_blizt"] == 5:
-		print("ok 2")
-		fen.partie["possibilites"] = []
-		passer_tour(fen)
-	fen.after(1000, lambda: crono_blizt(fen))
+	if fen.partie["en_cours"]:
+		fen.partie["time_blizt"] = f'{int(fen.partie["time_blizt"])+1}'
+		if fen.partie["time_blizt"] == "900":
+			fen.partie["possibilites"] = []
+			passer_tour(fen)
+		fen.after(1000, lambda: crono_blizt(fen))
+	else:
+		pass
 
 """Fonctions d'affichage"""
 def afficher_partie(fen):
@@ -289,6 +295,7 @@ class Popup_sauvegarde(Canvas):
 		self.create_window(self.winfo_reqwidth()//2+self.winfo_reqwidth()//6, self.winfo_reqheight()//1.25, window=self.bouton_annuler)
 
 	def valider(self):
+		self._root().partie["en_cours"] = False
 		nom = self.entree_var.get()
 		validation = self.est_valide(nom)
 		if validation == "Nom valide." or validation == "Attention: vous allez écraser une sauvegarde !":
