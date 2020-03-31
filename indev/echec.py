@@ -1,6 +1,7 @@
 from tkinter import *
 from time import *
 from os import path
+import json
 
 import classes
 from classes import *
@@ -83,6 +84,7 @@ def nouvelle_partie(fen, type):
 	fen.partie["joueur"] = "blanc"
 	fen.partie["tour"] = 1
 	fen.partie["debut"] = time()
+	fen.partie["temps_enregistre"] = 0
 	fen.partie["pieces_mangees_blanc"] = []
 	fen.partie["pieces_mangees_noir"] = []
 	afficher_partie(fen)
@@ -92,63 +94,33 @@ def charger_partie(fen, fichier):
 	if fichier != "":
 		fen.partie["plateau"] = {}
 		with open(fichier, "r") as fichier:
-			lignes = fichier.readlines()
-			for i in range(8):
-				cases = lignes[i].split()
-				for j in range(8):
-					if cases[j] == "N":
-						piece = None
-					elif cases[j] == "P":
-						piece = Pion(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "T":
-						piece = Tour(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "C":
-						piece = Cavalier(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "F":
-						piece = Fou(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "D":
-						piece = Dame(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "R":
-						piece = Roi(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					fen.partie["plateau"][tuple_to_string((i, j))] = piece
-			fen.partie["type"] = lignes[8]
-			fen.partie["actif"] = None
-			l = 0
-			for e in lignes: #Supprime les lignes vides qui apparaissent parfois
-				if e == "\n":
-					l+=1
-			fen.partie["joueur"] = lignes[9+l].replace("\n", "")
-			fen.partie["tour"] = int(lignes[10+l])
-			fen.partie["debut"] = time()-float(lignes[11+l])
-			fen.partie["pieces_mangees_blanc"] = lignes[12+l].split(" ")
-			fen.partie["pieces_mangees_noir"] = lignes[13+l].split(" ")
-			fen.partie["possibilites"] = []
+			donnees = json.load(fichier)
+			fen.partie = {
+				"type": donnees["type"],
+				"joueur": donnees["joueur"],
+				"tour": donnees["tour"],
+				"debut": time(),
+				"temps_enregistre": donnees["temps_enregistre"],
+				"pieces_mangees_blanc": donnees["pieces_mangees_blanc"],
+				"pieces_mangees_noir": donnees["pieces_mangees_noir"],
+				"plateau": lettres_to_plateau(donnees["plateau"]),
+				"actif": None,
+				"possibilites": []
+			}
 			afficher_partie(fen)
 
 def sauvegarder_partie(nom, partie):
-	with open("parties/" + nom + ".save", "w") as fichier:
-		for i in range(8):
-			ligne_1 = ""
-			ligne_2 = ""
-			ligne_3 = ""
-			for j in range(8):
-				if partie["plateau"][tuple_to_string((i, j))] == None:
-					ligne_1 += "N "
-					ligne_2 += "N "
-					ligne_3 += "N "
-				else:
-					ligne_1 += partie["plateau"][tuple_to_string((i, j))].lettre + " "
-					ligne_2 += partie["plateau"][tuple_to_string((i, j))].equipe + " "
-					ligne_3 += str(partie["plateau"][tuple_to_string((i, j))].deplace) + " "
-			ligne = ligne_1+ligne_2+ligne_3
-			ligne += "\n"
-			fichier.write(ligne)
-		fichier.write(partie["type"] + "\n")
-		fichier.write(partie["joueur"] + "\n")
-		fichier.write(str(partie["tour"]) + "\n")
-		fichier.write(str(time()-partie["debut"]) + "\n")
-		fichier.write(" ".join(partie["pieces_mangees_blanc"]) + "\n")
-		fichier.write(" ".join(partie["pieces_mangees_noir"]))
+	with open("parties/" + nom + ".json", "w") as fichier:
+		donnees = {
+			"type": partie["type"],
+			"joueur": partie["joueur"],
+			"tour": partie["tour"],
+			"temps_enregistre": time()-partie["debut"]+partie["temps_enregistre"],
+			"pieces_mangees_blanc": partie[f"pieces_mangees_blanc"],
+			"pieces_mangees_noir": partie[f"pieces_mangees_noir"],
+			"plateau": plateau_to_lettres(partie["plateau"])
+		}
+		json.dump(donnees, fichier, indent=4)
 
 def quitter_partie(fen):
 	fen.canvas.delete("all")
@@ -200,6 +172,42 @@ def str_to_bool(a):
 		return True
 	return False
 
+def plateau_to_lettres(plateau):
+	final = {}
+	equipe = {"blanc": "B", "noir": "N"}
+	deplace = {"True": "T", "False": "F"}
+	for i in range(8):
+		for j in range(8):
+			if plateau[tuple_to_string((i, j))] != None:
+				final[tuple_to_string((i, j))] = plateau[tuple_to_string((i, j))].lettre + equipe[plateau[tuple_to_string((i, j))].equipe] + deplace[str(plateau[tuple_to_string((i, j))].deplace)]
+			else:
+				final[tuple_to_string((i, j))] = "NNN"
+	return final
+
+def lettres_to_plateau(lettres):
+	plateau = {}
+	equipe = {"B": "blanc", "N": "noir"}
+	deplace = {"T": True, "F": False}
+	for i in range(8):
+		for j in range(8):
+			case = lettres[tuple_to_string((i, j))]
+			if case[0] == "N":
+				piece = None
+			elif case[0] == "P":
+				piece = Pion(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "T":
+				piece = Tour(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "C":
+				piece = Cavalier(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "F":
+				piece = Fou(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "D":
+				piece = Dame(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "R":
+				piece = Roi(equipe[case[1]], i, j, deplace[case[2]])
+			plateau[tuple_to_string((i, j))] = piece
+	return plateau
+
 """Fonctions de jeu"""
 def deplacer(fen, piece, i, j):
 	i0, j0 = piece.i, piece.j
@@ -227,6 +235,18 @@ def passer_tour(fen):
 
 
 """Fonctions d'affichage"""
+class PieceMangees():
+	def __init__(self, fen, width, height):
+		self.fen = fen
+		self.canvas = Canvas(fen, width=width, height=height, border=0, highlightthickness=0, bg="#262626")
+		self.pieces = {"blanc": [], "noir": []}
+		self.coords = {"blanc": 0, "noir": self.canvas.winfo_reqwidth()//2}
+
+	def ajouter_image(self, equipe, image):
+		self.pieces[equipe].append(obtenir_image(image, self.canvas.winfo_reqwidth()//2, self.canvas.winfo_reqheight()//15))
+		self.canvas.create_image(self.coords[equipe], (len(self.pieces[equipe]))*self.canvas.winfo_height()//15, anchor=SW, image=self.pieces[equipe][len(self.pieces[equipe])-1])
+
+
 def afficher_partie(fen):
 	afficher_plateau(fen, fen.partie["plateau"])
 	afficher_infos(fen)
@@ -251,8 +271,12 @@ def afficher_infos(fen):
 	fen.affichage["bouton_menu"].bind("<Enter>", fen.entree_bouton)
 	fen.affichage["bouton_menu"].bind("<Leave>", fen.sortie_bouton)
 	fen.affichage_id["bouton_menu"] = fen.canvas.create_window(fen.canvas.winfo_width() - 50, fen.canvas.winfo_height() - 22, window=fen.affichage["bouton_menu"], anchor=CENTER)
-	fen.affichage_id["text_joueur"] = fen.canvas.create_text(10, 20, text="Tour du joueur " + fen.partie["joueur"], fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
-	fen.affichage_id["text_tour"] = fen.canvas.create_text(10, 60, text="Tour n°" + str(fen.partie["tour"]), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	fen.affichage_id["text_joueur"] = fen.canvas.create_text(10, 20, text="☺ Tour du joueur " + fen.partie["joueur"], fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	fen.affichage_id["text_tour"] = fen.canvas.create_text(10, 60, text="↔ Tour n°" + str(fen.partie["tour"]), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+
+	fen.affichage_id["text_temps_ecoule"] = fen.canvas.create_text(fen.winfo_width()//2, 20, text="⏲ Temps écoulé: 00:00:00", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text="⏲ Temps restant: ∞", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	fen.after(1000, lambda: actualiser_horloges(fen))
 
 	fen.affichage["canvas_mangees"] = PieceMangees(fen, 100-2*100//8, fen.canvas.winfo_height()//1.35)
 	fen.affichage_id["canvas_mangees"] = fen.canvas.create_window(fen.canvas.winfo_width() - 100+100//8, 110, window=fen.affichage["canvas_mangees"].canvas, anchor=NW)
@@ -264,23 +288,14 @@ def afficher_mangees(fen):
 	for piece in fen.partie["pieces_mangees_noir"]:
 		fen.affichage["canvas_mangees"].ajouter_image("noir", IMAGES[piece.replace("\n", "") + "_noir"])
 
-
-class PieceMangees():
-	def __init__(self, fen, width, height):
-		self.fen = fen
-		self.canvas = Canvas(fen, width=width, height=height, border=0, highlightthickness=0, bg="#262626")
-		self.pieces = {"blanc": [], "noir": []}
-		self.coords = {"blanc": 0, "noir": self.canvas.winfo_reqwidth()//2}
-
-	def ajouter_image(self, equipe, image):
-		self.pieces[equipe].append(obtenir_image(image, self.canvas.winfo_reqwidth()//2, self.canvas.winfo_reqheight()//15))
-		self.canvas.create_image(self.coords[equipe], (len(self.pieces[equipe]))*self.canvas.winfo_height()//15, anchor=SW, image=self.pieces[equipe][len(self.pieces[equipe])-1])
-
-
-
 def actualiser_affichage(fen):
-	fen.canvas.itemconfig(fen.affichage_id["text_joueur"], text="Tour du joueur " + fen.partie["joueur"])
-	fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="Tour n°" + str(fen.partie["tour"]))
+	fen.canvas.itemconfig(fen.affichage_id["text_joueur"], text="☺ Tour du joueur " + fen.partie["joueur"])
+	fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="↔ Tour n°" + str(fen.partie["tour"]))
+
+def actualiser_horloges(fen):
+	fen.canvas.itemconfig(fen.affichage_id["text_temps_ecoule"], text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(time()-fen.partie["debut"]+fen.partie["temps_enregistre"])).replace("{}", "⏲"))
+	#fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="Tour n°" + str(fen.partie["tour"]))
+	fen.after(1000, lambda: actualiser_horloges(fen))
 
 class PopupSauvegarde(Canvas):
 	def __init__(self, *args, **kwargs):

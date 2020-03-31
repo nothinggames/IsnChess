@@ -93,7 +93,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 
 	def ouvrir_charger(self):
 		charger_partie(self, filedialog.askopenfilename(initialdir=os.getcwd()+"/parties", title="Choisissez une partie",
-								   filetypes=[("Sauvegarde de partie", "*.save")]))
+								   filetypes=[("Sauvegarde de partie", "*.json")]))
 
 	def entree_bouton(self, e):
 		e.widget["bg"] = e.widget["activebackground"]
