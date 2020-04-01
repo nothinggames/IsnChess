@@ -86,7 +86,6 @@ def nouvelle_partie(fen, type):
 	fen.partie["debut"] = time()
 	if type == "blitz":
 		fen.partie["temps_passe"] = time() + 61 #nb secondes
-		fen.partie["temps_utilise"] = 0
 	fen.partie["temps_enregistre"] = 0
 	fen.partie["pieces_mangees_blanc"] = []
 	fen.partie["pieces_mangees_noir"] = []
