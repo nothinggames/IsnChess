@@ -1,9 +1,10 @@
 from tkinter import *
 from time import *
 from os import path
+import json
 
-import classes
-from classes import *
+import classes_indev
+from classes_indev import *
 
 class Case():
 	def __init__(self, fen, i, j):
@@ -83,76 +84,50 @@ def nouvelle_partie(fen, type):
 	fen.partie["joueur"] = "blanc"
 	fen.partie["tour"] = 1
 	fen.partie["debut"] = time()
-	fen.partie["time_blizt"] = 0
-	fen.partie["en_cours"] = True
-	if type == "blizt":
-		crono_blizt(fen)
+	if type == "blitz":
+		fen.partie["temps_passe"] = time() + 61 #nb secondes
+	fen.partie["temps_enregistre"] = 0
+	fen.partie["pieces_mangees_blanc"] = []
+	fen.partie["pieces_mangees_noir"] = []
 	afficher_partie(fen)
+
+def sauvegarder_partie(nom, partie):
+	print(partie)
+	with open("parties/" + nom + ".json", "w") as fichier:
+		donnees = {
+			"type": partie["type"],
+			"joueur": partie["joueur"],
+			"tour": partie["tour"],
+			"temps_enregistre": time()-partie["debut"]+partie["temps_enregistre"],
+			"temps_passe": partie["temps_passe"],
+			"pieces_mangees_blanc": partie[f"pieces_mangees_blanc"],
+			"pieces_mangees_noir": partie[f"pieces_mangees_noir"],
+			"plateau": plateau_to_lettres(partie["plateau"])
+		}
+
+		json.dump(donnees, fichier, indent=4)
 
 def charger_partie(fen, fichier):
 	fen.partie = {}
 	if fichier != "":
 		fen.partie["plateau"] = {}
 		with open(fichier, "r") as fichier:
-			lignes = fichier.readlines()
-			for i in range(8):
-				cases = lignes[i].split()
-				for j in range(8):
-					if cases[j] == "N":
-						piece = None
-					elif cases[j] == "P":
-						piece = Pion(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "T":
-						piece = Tour(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "C":
-						piece = Cavalier(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "F":
-						piece = Fou(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "D":
-						piece = Dame(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					elif cases[j] == "R":
-						piece = Roi(cases[j+8], i, j, str_to_bool(cases[j+16]))
-					fen.partie["plateau"][tuple_to_string((i, j))] = piece
-			info_type = lignes[8].split()
-			fen.partie["type"] = info_type[0]
-			fen.partie["time_blizt"] = info_type[1]
-
-			fen.partie["actif"] = None
-			l = 0
-			for e in lignes: #Supprime les lignes vides qui apparaissent parfois
-				if e == "\n":
-					l+=1
-			fen.partie["joueur"] = lignes[9+l].replace("\n", "")
-			fen.partie["tour"] = int(lignes[10+l])
-			fen.partie["debut"] = time()-float(lignes[11+l])
-			fen.partie["possibilites"] = []
-			fen.partie["en_cours"] = True
-			if fen.partie["type"] == "blizt":
-				crono_blizt(fen)
+			donnees = json.load(fichier)
+			fen.partie = {
+				"type": donnees["type"],
+				"joueur": donnees["joueur"],
+				"tour": donnees["tour"],
+				"debut": time(),
+				"temps_enregistre": donnees["temps_enregistre"],
+				"pieces_mangees_blanc": donnees["pieces_mangees_blanc"],
+				"pieces_mangees_noir": donnees["pieces_mangees_noir"],
+				"plateau": lettres_to_plateau(donnees["plateau"]),
+				"actif": None,
+				"possibilites": []
+			}
+			if donnees["type"] == "blitz":
+				fen.partie["temps_passe"] = donnees["temps_passe"]
 			afficher_partie(fen)
-
-def sauvegarder_partie(nom, partie):
-	with open("parties/" + nom + ".save", "w") as fichier:
-		for i in range(8):
-			ligne_1 = ""
-			ligne_2 = ""
-			ligne_3 = ""
-			for j in range(8):
-				if partie["plateau"][tuple_to_string((i, j))] == None:
-					ligne_1 += "N "
-					ligne_2 += "N "
-					ligne_3 += "N "
-				else:
-					ligne_1 += partie["plateau"][tuple_to_string((i, j))].lettre + " "
-					ligne_2 += partie["plateau"][tuple_to_string((i, j))].equipe + " "
-					ligne_3 += str(partie["plateau"][tuple_to_string((i, j))].deplace) + " "
-			ligne = ligne_1+ligne_2+ligne_3
-			ligne += "\n"
-			fichier.write(ligne)
-		fichier.write(f'{partie["type"]} {partie["time_blizt"]}' + "\n")
-		fichier.write(partie["joueur"] + "\n")
-		fichier.write(str(partie["tour"]) + "\n")
-		fichier.write(str(time()-partie["debut"]))
 
 def quitter_partie(fen):
 	fen.canvas.delete("all")
@@ -204,13 +179,52 @@ def str_to_bool(a):
 		return True
 	return False
 
+def plateau_to_lettres(plateau):
+	final = {}
+	equipe = {"blanc": "B", "noir": "N"}
+	deplace = {"True": "T", "False": "F"}
+	for i in range(8):
+		for j in range(8):
+			if plateau[tuple_to_string((i, j))] != None:
+				final[tuple_to_string((i, j))] = plateau[tuple_to_string((i, j))].lettre + equipe[plateau[tuple_to_string((i, j))].equipe] + deplace[str(plateau[tuple_to_string((i, j))].deplace)]
+			else:
+				final[tuple_to_string((i, j))] = "NNN"
+	return final
+
+def lettres_to_plateau(lettres):
+	plateau = {}
+	equipe = {"B": "blanc", "N": "noir"}
+	deplace = {"T": True, "F": False}
+	for i in range(8):
+		for j in range(8):
+			case = lettres[tuple_to_string((i, j))]
+			if case[0] == "N":
+				piece = None
+			elif case[0] == "P":
+				piece = Pion(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "T":
+				piece = Tour(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "C":
+				piece = Cavalier(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "F":
+				piece = Fou(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "D":
+				piece = Dame(equipe[case[1]], i, j, deplace[case[2]])
+			elif case[0] == "R":
+				piece = Roi(equipe[case[1]], i, j, deplace[case[2]])
+			plateau[tuple_to_string((i, j))] = piece
+	return plateau
+
 """Fonctions de jeu"""
 def deplacer(fen, piece, i, j):
 	i0, j0 = piece.i, piece.j
 	fen.partie["plateau"][tuple_to_string((i0, j0))] = None
-	if type(piece) == classes.Pion: #Promotion
+	if type(piece) == classes_indev.Pion: #Promotion
 		if i == 0 or i == 7:
-			piece = classes.Dame(piece.equipe, i, j)
+			piece = classes_indev.Dame(piece.equipe, i, j)
+	if fen.partie["plateau"][tuple_to_string((i, j))] != None:
+		fen.partie[f"pieces_mangees_{fen.partie['plateau'][tuple_to_string((i, j))].equipe}"].append(fen.partie["plateau"][tuple_to_string((i, j))].lettre)
+		fen.affichage["canvas_mangees"].ajouter_image(fen.partie["plateau"][tuple_to_string((i, j))].equipe, fen.partie["plateau"][tuple_to_string((i, j))].image_name)
 	fen.partie["plateau"][tuple_to_string((i, j))] = piece
 	piece.deplace = True
 	fen.boutons_cases[tuple_to_string((i0, j0))].placer_piece(fen.partie["plateau"][tuple_to_string((i0, j0))])
@@ -220,24 +234,30 @@ def deplacer(fen, piece, i, j):
 
 def passer_tour(fen):
 	if fen.partie["joueur"] == "blanc":
+		#zzzz
+		#test_echec(fen) #L'idée est de vérifier à la fin du tour si son roi est en echec et math
 		fen.partie["joueur"] = "noir"
 	else:
 		fen.partie["joueur"] = "blanc"
 		fen.partie["tour"] += 1
+	if fen.partie["type"] == "blitz":
+		fen.partie["temps_passe"] = time() + 61
 	actualiser_affichage(fen)
-	fen.partie["time_blizt"] = 0
 
-def crono_blizt(fen):
-	if fen.partie["en_cours"]:
-		fen.partie["time_blizt"] = f'{int(fen.partie["time_blizt"])+1}'
-		if fen.partie["time_blizt"] == "900":
-			fen.partie["possibilites"] = []
-			passer_tour(fen)
-		fen.after(1000, lambda: crono_blizt(fen))
-	else:
-		pass
 
 """Fonctions d'affichage"""
+class PieceMangees():
+	def __init__(self, fen, width, height):
+		self.fen = fen
+		self.canvas = Canvas(fen, width=width, height=height, border=0, highlightthickness=0, bg="#262626")
+		self.pieces = {"blanc": [], "noir": []}
+		self.coords = {"blanc": 0, "noir": self.canvas.winfo_reqwidth()//2}
+
+	def ajouter_image(self, equipe, image):
+		self.pieces[equipe].append(obtenir_image(image, self.canvas.winfo_reqwidth()//2, self.canvas.winfo_reqheight()//15))
+		self.canvas.create_image(self.coords[equipe], (len(self.pieces[equipe]))*self.canvas.winfo_height()//15, anchor=SW, image=self.pieces[equipe][len(self.pieces[equipe])-1])
+
+
 def afficher_partie(fen):
 	afficher_plateau(fen, fen.partie["plateau"])
 	afficher_infos(fen)
@@ -261,16 +281,43 @@ def afficher_infos(fen):
 	fen.affichage["bouton_menu"] = Button(fen, text="Quitter", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: afficher_input_sauvegarde(fen), border=0, relief=SUNKEN)
 	fen.affichage["bouton_menu"].bind("<Enter>", fen.entree_bouton)
 	fen.affichage["bouton_menu"].bind("<Leave>", fen.sortie_bouton)
-	fen.affichage_id["bouton_menu"] = fen.canvas.create_window(fen.canvas.winfo_width() - 50, fen.canvas.winfo_height() - 50, window=fen.affichage["bouton_menu"], anchor=CENTER)
-	fen.affichage_id["text_joueur"] = fen.canvas.create_text(10, 20, text="Tour du joueur " + fen.partie["joueur"], fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
-	fen.affichage_id["text_tour"] = fen.canvas.create_text(10, 60, text="Tour n°" + str(fen.partie["tour"]), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	fen.affichage_id["bouton_menu"] = fen.canvas.create_window(fen.canvas.winfo_width() - 50, fen.canvas.winfo_height() - 22, window=fen.affichage["bouton_menu"], anchor=CENTER)
+	fen.affichage_id["text_joueur"] = fen.canvas.create_text(10, 20, text="☺ Tour du joueur " + fen.partie["joueur"], fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	fen.affichage_id["text_tour"] = fen.canvas.create_text(10, 60, text="↔ Tour n°" + str(fen.partie["tour"]), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 
+	fen.affichage_id["text_temps_ecoule"] = fen.canvas.create_text(fen.winfo_width()//2, 20, text="⏲ Temps écoulé: 00:00:00", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	if fen.partie["type"] == "blitz":
+		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(
+		fen.partie["temps_passe"] - time())).replace("{}", "⏲"), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	else:
+		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text="⏲ Temps restant: ∞", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	fen.after(1000, lambda: actualiser_horloges(fen))
+
+	fen.affichage["canvas_mangees"] = PieceMangees(fen, 100-2*100//8, fen.canvas.winfo_height()//1.35)
+	fen.affichage_id["canvas_mangees"] = fen.canvas.create_window(fen.canvas.winfo_width() - 100+100//8, 110, window=fen.affichage["canvas_mangees"].canvas, anchor=NW)
+	fen.after(10, lambda: afficher_mangees(fen)) #Il est necessair d'attendre un peu pour que la fenêtre s'initialise correctement
+
+def afficher_mangees(fen):
+	for piece in fen.partie["pieces_mangees_blanc"]:
+		fen.affichage["canvas_mangees"].ajouter_image("blanc", IMAGES[piece.replace("\n", "") + "_blanc"])
+	for piece in fen.partie["pieces_mangees_noir"]:
+		fen.affichage["canvas_mangees"].ajouter_image("noir", IMAGES[piece.replace("\n", "") + "_noir"])
 
 def actualiser_affichage(fen):
-	fen.canvas.itemconfig(fen.affichage_id["text_joueur"], text="Tour du joueur " + fen.partie["joueur"])
-	fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="Tour n°" + str(fen.partie["tour"]))
+	fen.canvas.itemconfig(fen.affichage_id["text_joueur"], text="☺ Tour du joueur " + fen.partie["joueur"])
+	fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="↔ Tour n°" + str(fen.partie["tour"]))
 
-class Popup_sauvegarde(Canvas):
+def actualiser_horloges(fen):
+	fen.canvas.itemconfig(fen.affichage_id["text_temps_ecoule"], text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(time()-fen.partie["debut"]+fen.partie["temps_enregistre"])).replace("{}", "⏲"))
+	if fen.partie["type"] == "blitz":
+		if fen.partie["temps_passe"] - time() <= 0:
+			passer_tour(fen)
+		fen.canvas.itemconfig(fen.affichage_id["text_temps_restant"], text=strftime("{} Temps restant: %H:%M:%S", gmtime(
+			fen.partie["temps_passe"] - time())).replace("{}", "⏲"))
+
+	fen.after(1000, lambda: actualiser_horloges(fen))
+
+class PopupSauvegarde(Canvas):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		fen = self._root()
@@ -295,7 +342,6 @@ class Popup_sauvegarde(Canvas):
 		self.create_window(self.winfo_reqwidth()//2+self.winfo_reqwidth()//6, self.winfo_reqheight()//1.25, window=self.bouton_annuler)
 
 	def valider(self):
-		self._root().partie["en_cours"] = False
 		nom = self.entree_var.get()
 		validation = self.est_valide(nom)
 		if validation == "Nom valide." or validation == "Attention: vous allez écraser une sauvegarde !":
@@ -335,14 +381,54 @@ class Popup_sauvegarde(Canvas):
 
 
 def afficher_input_sauvegarde(fen, fermer=False): #Sert à afficher la fenêtre de demande de sauvegarde
-	Popup_sauvegarde(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//2, bg="#3d3937", border=0, highlightthickness=0).afficher(fermer)
+	PopupSauvegarde(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//2, bg="#3d3937", border=0, highlightthickness=0).afficher(fermer)
 
 
 """Fonctions d'échec et mat"""
-def est_echec(plateau):
+def est_echec(fen):#On verifie ici si le roi est menacé
+	plateau = fen.partie["plateau"]
 	for case in plateau:
 		if plateau[case] != None:
 			for p in plateau[case].cases_possibles(plateau):
-				if type(plateau[p]) == classes.Roi:
+				if type(plateau[p]) == classes_indev.Roi:
 					return plateau[p].equipe
 	return None
+
+def roi_est_bloque(fen):
+	for case in fen.partie["plateau"]:
+		if fen.partie["plateau"][case] == classes_indev.Roi:
+			print("OK 1")
+			if fen.partie["plateau"][case].equipe == fen.partie["joueur"]:
+				print("OK 2")
+				mouvement_possible = fen.partie["plateau"][case].cases_possibles(fen.partie["plateau"])
+				if mouvement_possible == []:
+					print("OK 3")
+					return True
+	return False
+
+
+def test_echec(fen):
+	a = input("verifier echec ?(y/n)")
+	if a == "y":
+		if roi_est_bloque(fen):
+			print("Il est dos au mur !")
+		else:
+			print("On l'aura, courrage")
+	else:
+		print("Tchao")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
