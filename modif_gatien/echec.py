@@ -3,8 +3,8 @@ from time import *
 from os import path
 import json
 
-import classes_indev
-from classes_indev import *
+import classes
+from classes import *
 
 class Case():
 	def __init__(self, fen, i, j):
@@ -219,9 +219,9 @@ def lettres_to_plateau(lettres):
 def deplacer(fen, piece, i, j):
 	i0, j0 = piece.i, piece.j
 	fen.partie["plateau"][tuple_to_string((i0, j0))] = None
-	if type(piece) == classes_indev.Pion: #Promotion
+	if type(piece) == classes.Pion: #Promotion
 		if i == 0 or i == 7:
-			piece = classes_indev.Dame(piece.equipe, i, j)
+			piece = classes.Dame(piece.equipe, i, j)
 	if fen.partie["plateau"][tuple_to_string((i, j))] != None:
 		fen.partie[f"pieces_mangees_{fen.partie['plateau'][tuple_to_string((i, j))].equipe}"].append(fen.partie["plateau"][tuple_to_string((i, j))].lettre)
 		fen.affichage["canvas_mangees"].ajouter_image(fen.partie["plateau"][tuple_to_string((i, j))].equipe, fen.partie["plateau"][tuple_to_string((i, j))].image_name)
@@ -390,13 +390,13 @@ def est_echec(fen):#On verifie ici si le roi est menacé
 	for case in plateau:
 		if plateau[case] != None:
 			for p in plateau[case].cases_possibles(plateau):
-				if type(plateau[p]) == classes_indev.Roi:
+				if type(plateau[p]) == classes.Roi:
 					return plateau[p].equipe
 	return None
 
 def roi_est_bloque(fen):
 	for case in fen.partie["plateau"]:
-		if fen.partie["plateau"][case] == classes_indev.Roi:
+		if fen.partie["plateau"][case] == classes.Roi:
 			print("OK 1")
 			if fen.partie["plateau"][case].equipe == fen.partie["joueur"]:
 				print("OK 2")

@@ -2,7 +2,7 @@ import os
 from tkinter import *
 from tkinter import filedialog
 
-from echec_indev import *
+from echec import *
 
 class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui apparaissent tout de même dans la barre de tâches
 	def __init__(self, *args, **kwargs):

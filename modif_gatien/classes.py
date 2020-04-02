@@ -20,6 +20,7 @@ IMAGES = {
 #Pion terminé à 95%, il manque la promotion
 class Pion():
 	def __init__(self, equipe, i, j, deplace=False):
+		print("OK 1")
 		self.equipe = equipe
 		self.i = i
 		self.j = j
@@ -172,8 +173,9 @@ class Roi():
 						cases_sures.remove(e)
 
 			# On detecte les pions
+			pion = Pion(self.equipe, int(e[0]), int(e[1]))
 			for case in pion.cases_possibles(plateau):
-				if type(plateau[case]) == Pion:
+				if type(plateau[case] and case != f"{e[0]}{int(e[1])+1}" and case != f"{e[0]}{int(e[1])-1}") == Pion:
 					if e not in cases_dangereuses:
 						cases_dangereuses.append(e)
 						cases_sures.remove(e)
