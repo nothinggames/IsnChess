@@ -397,7 +397,6 @@ def est_echec(fen):#On verifie ici si le roi est menacé
 def roi_est_bloque(fen):
 	for case in fen.partie["plateau"]:
 		if fen.partie["plateau"][case] == classes.Roi:
-			print("OK 1")
 			if fen.partie["plateau"][case].equipe == fen.partie["joueur"]:
 				print("OK 2")
 				mouvement_possible = fen.partie["plateau"][case].cases_possibles(fen.partie["plateau"])
