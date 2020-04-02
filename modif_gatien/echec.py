@@ -385,6 +385,11 @@ def afficher_input_sauvegarde(fen, fermer=False): #Sert à afficher la fenêtre 
 
 
 """Fonctions d'échec et mat"""
+
+
+"""		Fonction utile au roi et à l'echec et mat"""
+
+
 def est_echec(fen):#On verifie ici si le roi est menacé
 	plateau = fen.partie["plateau"]
 	for case in plateau:
@@ -394,27 +399,9 @@ def est_echec(fen):#On verifie ici si le roi est menacé
 					return plateau[p].equipe
 	return None
 
-def roi_est_bloque(fen):
-	for case in fen.partie["plateau"]:
-		if fen.partie["plateau"][case] == classes.Roi:
-			if fen.partie["plateau"][case].equipe == fen.partie["joueur"]:
-				print("OK 2")
-				mouvement_possible = fen.partie["plateau"][case].cases_possibles(fen.partie["plateau"])
-				if mouvement_possible == []:
-					print("OK 3")
-					return True
-	return False
 
 
-def test_echec(fen):
-	a = input("verifier echec ?(y/n)")
-	if a == "y":
-		if roi_est_bloque(fen):
-			print("Il est dos au mur !")
-		else:
-			print("On l'aura, courrage")
-	else:
-		print("Tchao")
+
 
 
 
