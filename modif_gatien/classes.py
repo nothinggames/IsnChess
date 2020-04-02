@@ -147,14 +147,14 @@ class Roi():
 
 	def possibilite_menace(self, plateau, possibilite):
 		cases_sures = possibilite[:]
-		for e in possibilite:
-			cases_sures= self.verification_cavalier(plateau, e[0], e[1], cases_sures)
+		for e in possibilite:#On verifi chaque case où peut aller le roi pour voir si elle est dangereuse
+			cases_sures= self.verification_cavalier(plateau, e[0], e[1], cases_sures)#Verif pour l'attaque par cavalier
 
-			cases_sures =self.verification_tour(plateau, e[0], e[1], cases_sures)
+			cases_sures =self.verification_tour(plateau, e[0], e[1], cases_sures)#par une tour ou une dame en directe
 
-			cases_sures = self.verification_fou(plateau, e[0], e[1], cases_sures)
+			cases_sures = self.verification_fou(plateau, e[0], e[1], cases_sures)#Par un fou ou une dame en diagonale
 
-			cases_sures = self.verification_pion(plateau, e[0], e[1], cases_sures)
+			cases_sures = self.verification_pion(plateau, e[0], e[1], cases_sures)#Et oui, même un pion peut manger le roi
 
 		return cases_sures
 
