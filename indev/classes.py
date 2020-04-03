@@ -181,22 +181,24 @@ class Cavalier():
 
 
 def obtenir_possibilites(plateau, i, j, a, b):
-	n = 0
-	m = 0
-	possibilites = []
-	while True:
-		n += 1
-		m += 1
-		case = (i + n*a, j + m*b)
-		if case_hors_plateau(case):
-			return possibilites
-		if plateau[tuple_to_string(case)] == None:
-			possibilites.append(tuple_to_string(case))
-		else:
-			if plateau[tuple_to_string(case)].equipe != plateau[tuple_to_string((i, j))].equipe:
+	if plateau[tuple_to_string((i, j))] != None:
+		n = 0
+		m = 0
+		possibilites = []
+		equipe = plateau[tuple_to_string((i, j))].equipe
+		while True:
+			n += 1
+			m += 1
+			case = (i + n*a, j + m*b)
+			if case_hors_plateau(case):
+				return possibilites
+			if plateau[tuple_to_string(case)] == None:
 				possibilites.append(tuple_to_string(case))
-			return possibilites
-
+			else:
+				if plateau[tuple_to_string(case)].equipe != equipe:
+					possibilites.append(tuple_to_string(case))
+				return possibilites
+	return []
 """Fonctions utilitaires"""
 def tuple_to_string(a):
 	return f"{a[0]}{a[1]}"

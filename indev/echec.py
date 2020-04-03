@@ -38,8 +38,9 @@ class Case():
 			self.canvas.delete(self.image_possibilite)
 			self.image_possibilite = None
 		if p == True:
-			size = 10
-			self.image_possibilite = self.canvas.create_oval(self.canvas.winfo_reqwidth()//2-size, self.canvas.winfo_reqheight()//2-size, self.canvas.winfo_reqwidth()//2+size, self.canvas.winfo_reqheight()//2+size, fill="#857c1b")
+			size = 12
+			self.image_possibilite = self.canvas.create_oval(self.canvas.winfo_reqwidth()//2-size, self.canvas.winfo_reqheight()//2-size, self.canvas.winfo_reqwidth()//2+size, self.canvas.winfo_reqheight()//2+size,
+				fill="#73706a", width=0)
 
 
 	def click(self, e):
@@ -64,14 +65,20 @@ class Case():
 					fen.partie["possibilites"] = []
 					fen.partie["actif"] = None
 
-		if fen.partie["actif"] == 42: #Cette partie est désactivée car elle ne fonctionne pas actuellement
-			i, j = fen.partie["actif"].i, fen.partie["actif"].j
+		#Ici faire simulation
+		if 1 == 1:
 			for p in fen.partie["possibilites"]:
-				plateau = fen.partie["plateau"].copy()
-				plateau[p] = plateau[tuple_to_string((i, j))]
-				plateau[tuple_to_string((i, j))] = None
-				if est_echec(plateau) != None:
-					print("echec !")
+				simulation = {}
+				for e in fen.partie["plateau"]:
+					simulation[e] = fen.partie["plateau"][e]
+				simulation[tuple_to_string((i, j))] = None
+				simulation[p] = fen.partie["plateau"][tuple_to_string((i, j))]
+				#print((i, j), p, simulation)
+				#print(est_echec(simulation))
+				if est_echec(simulation) != None:
+					fen.partie["possibilites"].remove(p)
+
+
 		afficher_possibilites(fen)
 
 """Fonctions de parties"""
@@ -229,7 +236,10 @@ def deplacer(fen, piece, i, j):
 	fen.boutons_cases[tuple_to_string((i0, j0))].placer_piece(fen.partie["plateau"][tuple_to_string((i0, j0))])
 	fen.boutons_cases[tuple_to_string((i, j))].placer_piece(fen.partie["plateau"][tuple_to_string((i, j))])
 	piece.i, piece.j = i, j
-	#print(est_echec(fen.partie["plateau"]))
+	print(est_echec(fen.partie["plateau"]))
+	echec = est_echec(fen.partie["plateau"])
+	if echec != None:
+		PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher(f"Le Roi {echec} est en échec !")
 
 def passer_tour(fen):
 	if fen.partie["joueur"] == "blanc":
@@ -238,9 +248,10 @@ def passer_tour(fen):
 		fen.partie["joueur"] = "blanc"
 		fen.partie["tour"] += 1
 	if fen.partie["type"] == "blitz":
-		fen.partie["temps_passe"] = time() + 61
+		fen.partie["temps_passe"] = time() + 60
 	actualiser_affichage(fen)
 
+	#PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher("Le Roi ")
 
 """Fonctions d'affichage"""
 class PieceMangees():
@@ -284,7 +295,7 @@ def afficher_infos(fen):
 
 	fen.affichage_id["text_temps_ecoule"] = fen.canvas.create_text(fen.winfo_width()//2, 20, text="⏲ Temps écoulé: 00:00:00", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 	if fen.partie["type"] == "blitz":
-		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(
+		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text=strftime("{} Temps restant: %H:%M:%S", gmtime(
 		fen.partie["temps_passe"] - time())).replace("{}", "⏲"), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 	else:
 		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text="⏲ Temps restant: ∞", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
@@ -309,10 +320,33 @@ def actualiser_horloges(fen):
 	if fen.partie["type"] == "blitz":
 		if fen.partie["temps_passe"] - time() <= 0:
 			passer_tour(fen)
-		fen.canvas.itemconfig(fen.affichage_id["text_temps_restant"], text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(
-			fen.partie["temps_passe"] - time())).replace("{}", "⏲"))
+		if fen.partie["temps_passe"] - time() <= 31:
+			color = "#b81106"
+		else:
+			color = fen.bouton_fg
+		fen.canvas.itemconfig(fen.affichage_id["text_temps_restant"], text=strftime("{} Temps restant: %H:%M:%S", gmtime(
+			fen.partie["temps_passe"] - time())).replace("{}", "⏲"), fill=color)
 
 	fen.after(1000, lambda: actualiser_horloges(fen))
+
+class PopupInfo(Canvas):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		fen = self._root()
+		self.text = self.create_text(self.winfo_reqwidth()//2, self.winfo_reqheight()//3, justify=CENTER, font="Helvetica 18", fill=fen.bouton_fg)
+		self.bouton_valider = Button(self, text="Valider", command=self.destroy, bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 16", border=0, relief=SUNKEN)
+		self.bouton_valider.bind("<Enter>", fen.entree_bouton)
+		self.bouton_valider.bind("<Leave>", fen.sortie_bouton)
+		self.create_window(self.winfo_reqwidth()//2, self.winfo_reqheight()//1.25, window=self.bouton_valider)
+	def afficher(self, message, action=None):
+		if action != None:
+			self.bouton_valider["command"] = action
+		self.itemconfig(self.text, text=message)
+		if self._root().affichage_id["popup"] != None:
+			self._root().canvas.delete(self._root().affichage_id["popup"])
+		self._root().affichage_id["popup"] = self._root().canvas.create_window(self._root().winfo_width()//2, self._root().winfo_height()//2, window=self)
+
+
 
 class PopupSauvegarde(Canvas):
 	def __init__(self, *args, **kwargs):
@@ -364,7 +398,7 @@ class PopupSauvegarde(Canvas):
 				if char in fichier:
 					message = "Nom invalide !"
 			if message != "Nom invalide !":
-				if path.exists("parties/" + fichier + ".save"):
+				if path.exists("parties/" + fichier + ".sa ve"):
 					message = "Attention: vous allez écraser une sauvegarde !"
 				else:
 					message = "Nom valide."
