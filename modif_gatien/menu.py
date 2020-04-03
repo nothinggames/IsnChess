@@ -88,12 +88,12 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.boutons[1]["text"] = "Partie Blitz"
 		self.boutons[2]["text"] = "Retour"
 		self.boutons[0]["command"] = lambda: nouvelle_partie(self._root(), "normale")
-		self.boutons[1]["command"] = lambda: nouvelle_partie(self._root(), "blizt")
+		self.boutons[1]["command"] = lambda: nouvelle_partie(self._root(), "blitz")
 		self.boutons[2]["command"] = self.ouvrir_accueil
 
 	def ouvrir_charger(self):
 		charger_partie(self, filedialog.askopenfilename(initialdir=os.getcwd()+"/parties", title="Choisissez une partie",
-								   filetypes=[("Sauvegarde de partie", "*.save")]))
+								   filetypes=[("Sauvegarde de partie", "*.json")]))
 
 	def entree_bouton(self, e):
 		e.widget["bg"] = e.widget["activebackground"]
@@ -117,5 +117,5 @@ def centrer_fenetre(fen):
 	fen.geometry('{}x{}+{}+{}'.format(width, height, x, y))
 
 app = Fenetre()
-app.little.title("Chesscraft")
+app.little.title("Echec")
 app.mainloop()

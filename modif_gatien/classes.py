@@ -2,6 +2,21 @@ from tkinter import *
 from PIL import Image
 from PIL import ImageTk
 
+IMAGES = {
+	"P_blanc": "images/pion_blanc.png",
+	"P_noir": "images/pion_noir.png",
+	"T_blanc": "images/tour_blanc.png",
+	"T_noir": "images/tour_noir.png",
+	"F_blanc": "images/fou_blanc.png",
+	"F_noir": "images/fou_noir.png",
+	"D_blanc": "images/dame_blanc.png",
+	"D_noir": "images/dame_noir.png",
+	"R_blanc": "images/roi_blanc.png",
+	"R_noir": "images/roi_noir.png",
+	"C_blanc": "images/cavalier_blanc.png",
+	"C_noir": "images/cavalier_noir.png"
+}
+
 #Pion terminé à 95%, il manque la promotion
 class Pion():
 	def __init__(self, equipe, i, j, deplace=False):
@@ -9,8 +24,9 @@ class Pion():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/pion_{self.equipe}.png")
 		self.lettre = "P"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 		
 	def cases_possibles(self, plateau):
 		if self.equipe == "blanc":
@@ -49,15 +65,16 @@ class Tour():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/tour_{self.equipe}.png")
 		self.lettre = "T"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, 1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, -1)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, 1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, -1, self.equipe)
 		return possibilites
 
 
@@ -67,15 +84,16 @@ class Fou():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/fou_{self.equipe}.png")
 		self.lettre = "F"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 1)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 1, self.equipe)
 		return possibilites
 
 
@@ -85,23 +103,24 @@ class Dame():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/dame_{self.equipe}.png")
 		self.lettre = "D"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, 1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 1)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, 1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 1, self.equipe)
 		return possibilites
 		possibilites = []
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0, self.equipe)
 
 
 class Roi():
@@ -110,8 +129,9 @@ class Roi():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/roi_{self.equipe}.png")
 		self.lettre = "R"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -122,8 +142,55 @@ class Roi():
 					if not case_hors_plateau(case):
 						if plateau[tuple_to_string(case)] == None or plateau[tuple_to_string(case)].equipe != self.equipe:
 							possibilites.append(tuple_to_string(case))
+		possibilites = self.possibilite_menace(plateau, possibilites)
 		return possibilites
 
+	def possibilite_menace(self, plateau, possibilite):
+		cases_sures = possibilite[:]
+		for e in possibilite:#On verifi chaque case où peut aller le roi pour voir si elle est dangereuse
+			cases_sures= self.verification_cavalier(plateau, e[0], e[1], cases_sures)#Verif pour l'attaque par cavalier
+
+			cases_sures =self.verification_tour(plateau, e[0], e[1], cases_sures)#par une tour ou une dame en directe
+
+			cases_sures = self.verification_fou(plateau, e[0], e[1], cases_sures)#Par un fou ou une dame en diagonale
+
+			cases_sures = self.verification_pion(plateau, e[0], e[1], cases_sures)#Et oui, même un pion peut manger le roi
+
+		return cases_sures
+
+	def verification_tour(self, plateau, i, j, cases_sures):
+		tour = Tour(self.equipe, int(i), int(j))  # Pareil pour les tours et la moitié du mouvement de la dame
+		for case in tour.cases_possibles(plateau):
+			if type(plateau[case]) == Tour or type(plateau[case]) == Dame:
+				if f"{i}{j}" in cases_sures:
+					cases_sures.remove(f"{i}{j}")
+		return cases_sures
+
+	def verification_fou(self, plateau, i, j, cases_sures):
+		fou = Fou(self.equipe, int(i), int(j))  # On detecte  fou et dame en diagonale
+		for case in fou.cases_possibles(plateau):
+			if type(plateau[case]) == Fou or type(plateau[case]) == Dame:
+				if f"{i}{j}" in cases_sures:
+					cases_sures.remove(f"{i}{j}")
+		return cases_sures
+
+	def verification_cavalier(self, plateau, i, j, cases_sures):
+		cav = Cavalier(self.equipe, int(i), int(j))  # On creer un cavalier fictif qui va verifier si le case où veux aller le roi est menacée
+		for case in cav.cases_possibles(plateau):
+			if type(plateau[case]) == Cavalier:
+				if f"{i}{j}" in cases_sures:
+					cases_sures.remove(f"{i}{j}")
+
+		return cases_sures
+
+	def verification_pion(self, plateau, i, j, cases_sures):
+		pion = Pion(self.equipe, int(i), int(j), True)
+		for case in pion.cases_possibles(plateau):
+			print(case)
+			if type(plateau[case]) == Pion:
+				if f"{i}{j}" in cases_sures:
+					cases_sures.remove(f"{i}{j}")
+		return cases_sures
 
 class Cavalier():
 	def __init__(self, equipe, i, j, deplace=False):
@@ -131,8 +198,9 @@ class Cavalier():
 		self.i = i
 		self.j = j
 		self.deplace = deplace
-		self.image = obtenir_image(f"images/cavalier_{self.equipe}.png")
 		self.lettre = "C"
+		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
+		self.image = obtenir_image(self.image_name)
 
 	def cases_possibles(self, plateau):
 		possibilites = []
@@ -159,7 +227,7 @@ class Cavalier():
 		return possibilites
 
 
-def obtenir_possibilites(plateau, i, j, a, b):
+def obtenir_possibilites(plateau, i, j, a, b, equipe):
 	n = 0
 	m = 0
 	possibilites = []
@@ -172,7 +240,7 @@ def obtenir_possibilites(plateau, i, j, a, b):
 		if plateau[tuple_to_string(case)] == None:
 			possibilites.append(tuple_to_string(case))
 		else:
-			if plateau[tuple_to_string(case)].equipe != plateau[tuple_to_string((i, j))].equipe:
+			if plateau[tuple_to_string(case)].equipe != equipe:
 				possibilites.append(tuple_to_string(case))
 			return possibilites
 
@@ -180,9 +248,9 @@ def obtenir_possibilites(plateau, i, j, a, b):
 def tuple_to_string(a):
 	return f"{a[0]}{a[1]}"
 
-def obtenir_image(chemin):
+def obtenir_image(chemin, width=50, height=50):
 	img = Image.open(chemin)
-	img = img.resize((50, 50))
+	img = img.resize((width, height))
 	photoImg = ImageTk.PhotoImage(img)
 	return photoImg
 
