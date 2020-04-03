@@ -65,20 +65,6 @@ class Case():
 					fen.partie["possibilites"] = []
 					fen.partie["actif"] = None
 
-		#Ici faire simulation
-		if 1 == 1:
-			for p in fen.partie["possibilites"]:
-				simulation = {}
-				for e in fen.partie["plateau"]:
-					simulation[e] = fen.partie["plateau"][e]
-				simulation[tuple_to_string((i, j))] = None
-				simulation[p] = fen.partie["plateau"][tuple_to_string((i, j))]
-				#print((i, j), p, simulation)
-				#print(est_echec(simulation))
-				if est_echec(simulation) != None:
-					fen.partie["possibilites"].remove(p)
-
-
 		afficher_possibilites(fen)
 
 """Fonctions de parties"""
@@ -236,7 +222,7 @@ def deplacer(fen, piece, i, j):
 	fen.boutons_cases[tuple_to_string((i0, j0))].placer_piece(fen.partie["plateau"][tuple_to_string((i0, j0))])
 	fen.boutons_cases[tuple_to_string((i, j))].placer_piece(fen.partie["plateau"][tuple_to_string((i, j))])
 	piece.i, piece.j = i, j
-	print(est_echec(fen.partie["plateau"]))
+
 	echec = est_echec(fen.partie["plateau"])
 	if echec != None:
 		PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher(f"Le Roi {echec} est en échec !")

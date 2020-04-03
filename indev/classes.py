@@ -17,7 +17,8 @@ IMAGES = {
 	"C_noir": "images/cavalier_noir.png"
 }
 
-#Pion terminé à 95%, il manque la promotion
+
+# Pion terminé à 95%, il manque la promotion
 class Pion():
 	def __init__(self, equipe, i, j, deplace=False):
 		self.equipe = equipe
@@ -27,24 +28,24 @@ class Pion():
 		self.lettre = "P"
 		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
 		self.image = obtenir_image(self.image_name)
-		
+
 	def cases_possibles(self, plateau):
 		if self.equipe == "blanc":
 			k = 1
 		else:
 			k = -1
 		possibilites = [
-			(self.i + 1*k, self.j),
-			(self.i + 1*k, self.j - 1),
-			(self.i + 1*k, self.j + 1)
+			(self.i + 1 * k, self.j),
+			(self.i + 1 * k, self.j - 1),
+			(self.i + 1 * k, self.j + 1)
 		]
 		final = []
 		if not self.deplace:
-			possibilites.append((self.i + 2*k, self.j))
+			possibilites.append((self.i + 2 * k, self.j))
 		i = 0
 		for e in possibilites:
 			if not case_hors_plateau(e):
-				if i == 0 or i==3:
+				if i == 0 or i == 3:
 					if plateau[tuple_to_string(e)] == None:
 						if i == 3:
 							if plateau[tuple_to_string(possibilites[0])] == None:
@@ -56,7 +57,6 @@ class Pion():
 						final.append(tuple_to_string(e))
 			i += 1
 		return final
-
 
 
 class Tour():
@@ -140,7 +140,8 @@ class Roi():
 				if (i, j) != (0, 0):
 					case = (self.i + i, self.j + j)
 					if not case_hors_plateau(case):
-						if plateau[tuple_to_string(case)] == None or plateau[tuple_to_string(case)].equipe != self.equipe:
+						if plateau[tuple_to_string(case)] == None or plateau[
+							tuple_to_string(case)].equipe != self.equipe:
 							possibilites.append(tuple_to_string(case))
 		return possibilites
 
@@ -160,7 +161,7 @@ class Cavalier():
 		i = 2
 		j = 1
 		for a in range(2):
-			i*=-1
+			i *= -1
 			for b in range(2):
 				j *= -1
 				case = (self.i + i, self.j + j)
@@ -170,7 +171,7 @@ class Cavalier():
 		i = 1
 		j = 2
 		for a in range(2):
-			i*=-1
+			i *= -1
 			for b in range(2):
 				j *= -1
 				case = (self.i + i, self.j + j)
@@ -189,7 +190,7 @@ def obtenir_possibilites(plateau, i, j, a, b):
 		while True:
 			n += 1
 			m += 1
-			case = (i + n*a, j + m*b)
+			case = (i + n * a, j + m * b)
 			if case_hors_plateau(case):
 				return possibilites
 			if plateau[tuple_to_string(case)] == None:
@@ -199,9 +200,14 @@ def obtenir_possibilites(plateau, i, j, a, b):
 					possibilites.append(tuple_to_string(case))
 				return possibilites
 	return []
+
+
 """Fonctions utilitaires"""
+
+
 def tuple_to_string(a):
 	return f"{a[0]}{a[1]}"
+
 
 def obtenir_image(chemin, width=50, height=50):
 	img = Image.open(chemin)
@@ -209,10 +215,11 @@ def obtenir_image(chemin, width=50, height=50):
 	photoImg = ImageTk.PhotoImage(img)
 	return photoImg
 
+
 def case_hors_plateau(coord):
-	i=coord[0]
-	j=coord[1]
-	if i < 0 or i>7 or j<0 or j>7:
+	i = coord[0]
+	j = coord[1]
+	if i < 0 or i > 7 or j < 0 or j > 7:
 		return True
 	else:
 		return False
