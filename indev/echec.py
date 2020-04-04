@@ -316,6 +316,8 @@ def actualiser_affichage(fen):
 	fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="↔ Tour n°" + str(fen.partie["tour"]))
 
 def actualiser_horloges(fen):
+	if fen.partie["type"] == "menu":
+		return
 	fen.canvas.itemconfig(fen.affichage_id["text_temps_ecoule"], text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(time()-fen.partie["debut"]+fen.partie["temps_enregistre"])).replace("{}", "⏲"))
 	if fen.partie["type"] == "blitz":
 		if fen.partie["temps_passe"] - time() <= 0:
