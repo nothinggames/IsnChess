@@ -148,49 +148,46 @@ class Roi():
 	def possibilite_menace(self, plateau, possibilite):
 		cases_sures = possibilite[:]
 		for e in possibilite:#On verifi chaque case où peut aller le roi pour voir si elle est dangereuse
-			cases_sures= self.verification_cavalier(plateau, e[0], e[1], cases_sures)#Verif pour l'attaque par cavalier
-
-			cases_sures =self.verification_tour(plateau, e[0], e[1], cases_sures)#par une tour ou une dame en directe
-
-			cases_sures = self.verification_fou(plateau, e[0], e[1], cases_sures)#Par un fou ou une dame en diagonale
-
-			cases_sures = self.verification_pion(plateau, e[0], e[1], cases_sures)#Et oui, même un pion peut manger le roi
-
+			print(e)
+			if self.verification_cavalier(plateau, e[0], e[1], cases_sures) or \
+				self.verification_tour(plateau, e[0], e[1], cases_sures) or \
+				self.verification_fou(plateau, e[0], e[1], cases_sures) or \
+				self.verification_pion(plateau, e[0], e[1], cases_sures):
+				cases_sures.remove(e)
+		print(cases_sures)
 		return cases_sures
 
-	def verification_tour(self, plateau, i, j, cases_sures):
+	def verification_tour(self, plateau, i, j, cases_a_verifier):
 		tour = Tour(self.equipe, int(i), int(j))  # Pareil pour les tours et la moitié du mouvement de la dame
 		for case in tour.cases_possibles(plateau):
 			if type(plateau[case]) == Tour or type(plateau[case]) == Dame:
-				if f"{i}{j}" in cases_sures:
-					cases_sures.remove(f"{i}{j}")
-		return cases_sures
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
 
-	def verification_fou(self, plateau, i, j, cases_sures):
+	def verification_fou(self, plateau, i, j, cases_a_verifier):
 		fou = Fou(self.equipe, int(i), int(j))  # On detecte  fou et dame en diagonale
 		for case in fou.cases_possibles(plateau):
 			if type(plateau[case]) == Fou or type(plateau[case]) == Dame:
-				if f"{i}{j}" in cases_sures:
-					cases_sures.remove(f"{i}{j}")
-		return cases_sures
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
 
-	def verification_cavalier(self, plateau, i, j, cases_sures):
+	def verification_cavalier(self, plateau, i, j, cases_a_verifier):
 		cav = Cavalier(self.equipe, int(i), int(j))  # On creer un cavalier fictif qui va verifier si le case où veux aller le roi est menacée
 		for case in cav.cases_possibles(plateau):
 			if type(plateau[case]) == Cavalier:
-				if f"{i}{j}" in cases_sures:
-					cases_sures.remove(f"{i}{j}")
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
 
-		return cases_sures
-
-	def verification_pion(self, plateau, i, j, cases_sures):
+	def verification_pion(self, plateau, i, j, cases_a_verifier):
 		pion = Pion(self.equipe, int(i), int(j), True)
 		for case in pion.cases_possibles(plateau):
-			print(case)
 			if type(plateau[case]) == Pion:
-				if f"{i}{j}" in cases_sures:
-					cases_sures.remove(f"{i}{j}")
-		return cases_sures
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
 
 class Cavalier():
 	def __init__(self, equipe, i, j, deplace=False):

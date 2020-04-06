@@ -1,9 +1,8 @@
 {
-    "type": "blitz",
+    "type": "normale",
     "joueur": "blanc",
     "tour": 2,
-    "temps_enregistre": 9.212808847427368,
-    "temps_passe": 1585734504.6861675,
+    "temps_enregistre": 5.7378294467926025,
     "pieces_mangees_blanc": [],
     "pieces_mangees_noir": [],
     "plateau": {
@@ -44,7 +43,7 @@
         "42": "NNN",
         "43": "NNN",
         "44": "NNN",
-        "45": "PNT",
+        "45": "NNN",
         "46": "NNN",
         "47": "NNN",
         "50": "NNN",
@@ -52,7 +51,7 @@
         "52": "NNN",
         "53": "NNN",
         "54": "NNN",
-        "55": "NNN",
+        "55": "CNT",
         "56": "NNN",
         "57": "NNN",
         "60": "PNF",
@@ -60,7 +59,7 @@
         "62": "PNF",
         "63": "PNF",
         "64": "PNF",
-        "65": "NNN",
+        "65": "PNF",
         "66": "PNF",
         "67": "PNF",
         "70": "TNF",
@@ -69,7 +68,7 @@
         "73": "RNF",
         "74": "DNF",
         "75": "FNF",
-        "76": "CNF",
+        "76": "NNN",
         "77": "TNF"
     }
 }

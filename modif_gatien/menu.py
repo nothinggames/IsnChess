@@ -55,6 +55,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.lift()
 
 	def afficher_accueil(self):
+		self.partie = {"type": "menu"}
 		self.bouton_fermer["command"] = self.quit
 		self.canvas.create_image(0, 0, image=self.background_image, anchor=NW)
 		font = "Helvetica 20"
