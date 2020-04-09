@@ -133,8 +133,9 @@ class Roi():
 		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
 		self.image = obtenir_image(self.image_name)
 
-	def cases_possibles(self, plateau):
+	def cases_possibles(self, plateau, menace=True): #Le menace sert à dire si le roi qui apelle la fonction est réel ou fictif
 		possibilites = []
+		plateau[f"{self.i}{self.j}"] = None
 		for i in range(-1, 2):
 			for j in range(-1, 2):
 				if (i, j) != (0, 0):
@@ -142,25 +143,34 @@ class Roi():
 					if not case_hors_plateau(case):
 						if plateau[tuple_to_string(case)] == None or plateau[tuple_to_string(case)].equipe != self.equipe:
 							possibilites.append(tuple_to_string(case))
-		possibilites = self.possibilite_menace(plateau, possibilites)
+		if menace:
+			possibilites = self.possibilite_menace(plateau, possibilites)
+		plateau[f"{self.i}{self.j}"] = self
 		return possibilites
 
 	def possibilite_menace(self, plateau, possibilite):
 		cases_sures = possibilite[:]
 		for e in possibilite:#On verifi chaque case où peut aller le roi pour voir si elle est dangereuse
-			print(e)
 			if self.verification_cavalier(plateau, e[0], e[1], cases_sures) or \
 				self.verification_tour(plateau, e[0], e[1], cases_sures) or \
 				self.verification_fou(plateau, e[0], e[1], cases_sures) or \
-				self.verification_pion(plateau, e[0], e[1], cases_sures):
+				self.verification_pion(plateau, e[0], e[1], cases_sures) :
+				#self.verification_roi(plateau, e[0], e[1], cases_sures):
 				cases_sures.remove(e)
-		print(cases_sures)
 		return cases_sures
 
 	def verification_tour(self, plateau, i, j, cases_a_verifier):
 		tour = Tour(self.equipe, int(i), int(j))  # Pareil pour les tours et la moitié du mouvement de la dame
 		for case in tour.cases_possibles(plateau):
 			if type(plateau[case]) == Tour or type(plateau[case]) == Dame:
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
+
+	def verification_roi(self, plateau, i, j, cases_a_verifier):
+		roi = Roi(self.equipe, int(i), int(j))  # De même pour le roi adverse
+		for case in roi.cases_possibles(plateau, False):
+			if type(plateau[case]) == Roi:
 				if f"{i}{j}" in cases_a_verifier:
 					return True
 		return False
