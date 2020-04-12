@@ -63,6 +63,7 @@ class Case():
 						tuple_to_string((i, j))].equipe == fen.partie["joueur"]:
 						fen.partie["possibilites"] = fen.partie["plateau"][f'{i}{j}'].cases_possibles(fen.partie["plateau"])
 						fen.partie["actif"] = fen.partie["plateau"][f'{i}{j}']
+						fen.partie["possibilites"] = attention_messir(fen)
 					else:
 						fen.partie["possibilites"] = []
 						fen.partie["actif"] = None
@@ -251,11 +252,15 @@ def passer_tour(fen):
 	if fen.partie["type"] == "blitz":
 		fen.partie["temps_passe"] = time() + 60
 	actualiser_affichage(fen)
-	echec = est_echec(fen) #Vérifie si le roi du joueur qui va joueur est en échec
+	echec = est_echec(fen, fen.partie["plateau"]) #Vérifie si le roi du joueur qui va joueur est en échec
 	if echec:
 		mat = est_mat(fen)#On verifie maintenant le mat
 		if mat:
 			fen.partie["terminer"] = True
+			print([fen.partie["actif"].equipe])
+			for e in fen.partie["position_rois"]:
+				print(e)
+				fen.partie["plateau"][fen.partie["position_rois"][e]] = None
 			PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher(f"Le joueur {fen.partie['joueur']} a perdu !")
 		else:
 			PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher(f"Le Roi {fen.partie['joueur']} est en échec !")
@@ -426,8 +431,7 @@ def afficher_input_sauvegarde(fen, fermer=False): #Sert à afficher la fenêtre 
 
 
 """Fonctions d'échec, mat et roi non déplaçable"""
-def est_echec(fen):
-	plateau = fen.partie["plateau"]
+def est_echec(fen, plateau):
 	roi = plateau[fen.partie["position_rois"][fen.partie["joueur"]]]
 	if roi.possibilite_menace(plateau, [f"{roi.i}{roi.j}"]) == []:
 		return True
@@ -443,13 +447,15 @@ def est_mat(fen):
 		return False
 
 def attention_messir(fen):
-	if False:
-		plateau_fictif = fen.partie["plateau"].copy()
-		if type(fen.partie["actif"]) != classes.Roi:
-			print("ok 1")
-			return fen.partie["possibilites"]
-	else:
-		return fen.partie["possibilites"]
+	possibilite_finales = fen.partie["possibilites"].copy()
+	if type(fen.partie["actif"]) != classes.Roi:
+		for e in fen.partie["possibilites"]:
+			plateau_fictif = fen.partie["plateau"].copy()
+			plateau_fictif[e] = fen.partie["actif"]
+			plateau_fictif[f"{fen.partie['actif'].i}{fen.partie['actif'].j}"] = None
+			if est_echec(fen, plateau_fictif):
+				possibilite_finales.remove(e)
+	return possibilite_finales
 
 
 
