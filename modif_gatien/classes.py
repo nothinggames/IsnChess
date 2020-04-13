@@ -144,20 +144,22 @@ class Roi():
 						if plateau[tuple_to_string(case)] == None or plateau[tuple_to_string(case)].equipe != self.equipe:
 							possibilites.append(tuple_to_string(case))
 		if menace:
-			possibilites = self.possibilite_menace(plateau, possibilites)
+			possibilites, d = self.possibilite_menace(plateau, possibilites)
 		plateau[f"{self.i}{self.j}"] = self
 		return possibilites
 
 	def possibilite_menace(self, plateau, possibilite):
 		cases_sures = possibilite[:]
+		cases_dangereuses = []
 		for e in possibilite:#On verifi chaque case où peut aller le roi pour voir si elle est dangereuse
 			if self.verification_cavalier(plateau, e[0], e[1], cases_sures) or \
 				self.verification_tour(plateau, e[0], e[1], cases_sures) or \
 				self.verification_fou(plateau, e[0], e[1], cases_sures) or \
 				self.verification_pion(plateau, e[0], e[1], cases_sures) :
-				#self.verification_roi(plateau, e[0], e[1], cases_sures):
+				#self.verification_roi(plateau, e[0], e[1], cases_sures): #Ne marche pas encore
 				cases_sures.remove(e)
-		return cases_sures
+				cases_dangereuses.append(e)
+		return cases_sures, cases_dangereuses
 
 	def verification_tour(self, plateau, i, j, cases_a_verifier):
 		tour = Tour(self.equipe, int(i), int(j))  # Pareil pour les tours et la moitié du mouvement de la dame
@@ -268,3 +270,4 @@ def case_hors_plateau(coord):
 		return True
 	else:
 		return False
+

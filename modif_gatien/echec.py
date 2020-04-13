@@ -433,7 +433,8 @@ def afficher_input_sauvegarde(fen, fermer=False): #Sert à afficher la fenêtre 
 """Fonctions d'échec, mat et roi non déplaçable"""
 def est_echec(fen, plateau):
 	roi = plateau[fen.partie["position_rois"][fen.partie["joueur"]]]
-	if roi.possibilite_menace(plateau, [f"{roi.i}{roi.j}"]) == []:
+	possibilites, menaces = roi.possibilite_menace(plateau, [f"{roi.i}{roi.j}"])
+	if possibilites == []:
 		return True
 	else:
 		return False
@@ -441,7 +442,8 @@ def est_echec(fen, plateau):
 def est_mat(fen):
 	plateau = fen.partie["plateau"]
 	roi = plateau[fen.partie["position_rois"][fen.partie["joueur"]]]
-	if roi.cases_possibles(plateau) == []:
+	if roi.cases_possibles(plateau) == [] and mouvement_toutes_pieces(fen):
+
 		return True
 	else:
 		return False
@@ -458,7 +460,13 @@ def attention_messir(fen):
 	return possibilite_finales
 
 
-
+def mouvement_toutes_pieces(fen): #Consomme beaucoup de puissance, on calcul toutes les possibilitées de toutes les pieces alliés afin de savoir si elles peuvent défendre le roi
+	plateau = fen.partie["plateau"]
+	for e in plateau:
+		if plateau[e] != None and plateau[e].equipe != fen.partie["actif"].equipe:
+			if plateau[e].cases_possibles(plateau) != []:
+				return False
+	return True
 
 
 
