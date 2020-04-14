@@ -443,7 +443,6 @@ def est_mat(fen):
 	plateau = fen.partie["plateau"]
 	roi = plateau[fen.partie["position_rois"][fen.partie["joueur"]]]
 	if roi.cases_possibles(plateau) == [] and mouvement_toutes_pieces(fen):
-
 		return True
 	else:
 		return False
@@ -465,8 +464,10 @@ def mouvement_toutes_pieces(fen): #Consomme beaucoup de puissance, on calcul tou
 	for e in plateau:
 		if plateau[e] != None and plateau[e].equipe != fen.partie["actif"].equipe:
 			if plateau[e].cases_possibles(plateau) != []:
-				return False
-	return True
+				print("ok 1")
+				return True
+	print("ok 2")
+	return False
 
 
 
