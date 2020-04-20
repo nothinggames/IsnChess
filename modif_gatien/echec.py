@@ -46,12 +46,12 @@ class Case():
 	def click(self, e):
 		fen = self.fen
 		i, j = self.i, self.j
-		if fen.partie["terminer"] == False:
+		if fen.partie["terminee"] == False:
 			if fen.partie["possibilites"] == []:
 				if fen.partie["plateau"][tuple_to_string((i, j))] != None and fen.partie["plateau"][tuple_to_string((i, j))].equipe == fen.partie["joueur"]:
 					fen.partie["possibilites"] = fen.partie["plateau"][tuple_to_string((i, j))].cases_possibles(fen.partie["plateau"])
 					fen.partie["actif"] = fen.partie["plateau"][tuple_to_string((i, j))]
-					fen.partie["possibilites"] = attention_messir(fen)
+					fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"])
 			else:
 				if tuple_to_string((i, j)) in fen.partie["possibilites"]:
 					fen.partie["possibilites"] = []
@@ -63,13 +63,11 @@ class Case():
 						tuple_to_string((i, j))].equipe == fen.partie["joueur"]:
 						fen.partie["possibilites"] = fen.partie["plateau"][f'{i}{j}'].cases_possibles(fen.partie["plateau"])
 						fen.partie["actif"] = fen.partie["plateau"][f'{i}{j}']
-						fen.partie["possibilites"] = attention_messir(fen)
+						fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"])
 					else:
 						fen.partie["possibilites"] = []
 						fen.partie["actif"] = None
-
-
-		afficher_possibilites(fen)
+			afficher_possibilites(fen)
 
 """Fonctions de parties"""
 def nouvelle_partie(fen, type):
@@ -86,8 +84,8 @@ def nouvelle_partie(fen, type):
 	fen.partie["temps_enregistre"] = 0
 	fen.partie["pieces_mangees_blanc"] = []
 	fen.partie["pieces_mangees_noir"] = []
-	fen.partie["position_rois"] = {"blanc":"04", "noir":"73"}
-	fen.partie["terminer"] = False
+	fen.partie["positions_rois"] = {"blanc":"04", "noir":"73"}
+	fen.partie["terminee"] = False
 	afficher_partie(fen)
 
 def sauvegarder_partie(nom, partie):
@@ -122,20 +120,20 @@ def charger_partie(fen, fichier):
 				"plateau": lettres_to_plateau(donnees["plateau"]),
 				"actif": None,
 				"possibilites": [],
-				"position_rois" : {}
+				"positions_rois" : {}
 			}
 			for e in fen.partie["plateau"]:
 				if type(fen.partie["plateau"][e]) == classes.Roi:
 					if fen.partie["plateau"][e].equipe == "noir":
-						fen.partie["position_rois"]["noir"] = e
+						fen.partie["positions_rois"]["noir"] = e
 					else:
-						fen.partie["position_rois"]["blanc"] = e
-			if len(fen.partie["position_rois"]) == 2:
-				fen.partie["terminer"] = False
+						fen.partie["positions_rois"]["blanc"] = e
+			if len(fen.partie["positions_rois"]) == 2:
+				fen.partie["terminee"] = False
 			else:
-				fen.partie["terminer"] = True
+				fen.partie["terminee"] = True
 			if donnees["type"] == "blitz":
-				fen.partie["temps_passe"] = time() + donnees["temps_utilise"]
+				fen.partie["temps_passe"] = time() + donnees["temps_restant"]
 			afficher_partie(fen)
 
 def quitter_partie(fen):
@@ -232,7 +230,7 @@ def deplacer(fen, piece, i, j):
 		if i == 0 or i == 7:
 			piece = classes.Dame(piece.equipe, i, j)
 	if type(piece) == classes.Roi:
-		fen.partie["position_rois"][fen.partie["joueur"]] = f"{i}{j}"
+		fen.partie["positions_rois"][fen.partie["joueur"]] = f"{i}{j}"
 	if fen.partie["plateau"][tuple_to_string((i, j))] != None:
 		fen.partie[f"pieces_mangees_{fen.partie['plateau'][tuple_to_string((i, j))].equipe}"].append(fen.partie["plateau"][tuple_to_string((i, j))].lettre)
 		fen.affichage["canvas_mangees"].ajouter_image(fen.partie["plateau"][tuple_to_string((i, j))].equipe, fen.partie["plateau"][tuple_to_string((i, j))].image_name)
@@ -256,11 +254,9 @@ def passer_tour(fen):
 	if echec:
 		mat = est_mat(fen)#On verifie maintenant le mat
 		if mat:
-			fen.partie["terminer"] = True
+			fen.partie["terminee"] = True
 			print([fen.partie["actif"].equipe])
-			for e in fen.partie["position_rois"]:
-				print(e)
-				fen.partie["plateau"][fen.partie["position_rois"][e]] = None
+			fen.boutons_cases[tuple_to_string(fen.partie["positions_rois"][fen.partie['joueur']])].canvas["bg"] = "red"
 			PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher(f"Le joueur {fen.partie['joueur']} a perdu !")
 		else:
 			PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher(f"Le Roi {fen.partie['joueur']} est en échec !")
@@ -330,6 +326,8 @@ def actualiser_affichage(fen):
 
 def actualiser_horloges(fen):
 	if fen.partie["type"] == "menu":
+		return
+	if fen.partie["terminee"] == True:
 		return
 	fen.canvas.itemconfig(fen.affichage_id["text_temps_ecoule"], text=strftime("{} Temps écoulé: %H:%M:%S", gmtime(time()-fen.partie["debut"]+fen.partie["temps_enregistre"])).replace("{}", "⏲"))
 	if fen.partie["type"] == "blitz":
@@ -413,7 +411,7 @@ class PopupSauvegarde(Canvas):
 				if char in fichier:
 					message = "Nom invalide !"
 			if message != "Nom invalide !":
-				if path.exists("parties/" + fichier + ".sa ve"):
+				if path.exists("parties/" + fichier + ".json"):
 					message = "Attention: vous allez écraser une sauvegarde !"
 				else:
 					message = "Nom valide."
@@ -432,7 +430,7 @@ def afficher_input_sauvegarde(fen, fermer=False): #Sert à afficher la fenêtre 
 
 """Fonctions d'échec, mat et roi non déplaçable"""
 def est_echec(fen, plateau):
-	roi = plateau[fen.partie["position_rois"][fen.partie["joueur"]]]
+	roi = plateau[fen.partie["positions_rois"][fen.partie["joueur"]]]
 	possibilites, menaces = roi.possibilite_menace(plateau, [f"{roi.i}{roi.j}"])
 	if possibilites == []:
 		return True
@@ -441,16 +439,16 @@ def est_echec(fen, plateau):
 
 def est_mat(fen):
 	plateau = fen.partie["plateau"]
-	roi = plateau[fen.partie["position_rois"][fen.partie["joueur"]]]
+	roi = plateau[fen.partie["positions_rois"][fen.partie["joueur"]]]
 	if roi.cases_possibles(plateau) == [] and mouvement_toutes_pieces(fen):
 		return True
 	else:
 		return False
 
-def attention_messir(fen):
-	possibilite_finales = fen.partie["possibilites"].copy()
+def attention_messir(fen, possibilites):
+	possibilite_finales = possibilites.copy()
 	if type(fen.partie["actif"]) != classes.Roi:
-		for e in fen.partie["possibilites"]:
+		for e in possibilites:
 			plateau_fictif = fen.partie["plateau"].copy()
 			plateau_fictif[e] = fen.partie["actif"]
 			plateau_fictif[f"{fen.partie['actif'].i}{fen.partie['actif'].j}"] = None
@@ -462,12 +460,14 @@ def attention_messir(fen):
 def mouvement_toutes_pieces(fen): #Consomme beaucoup de puissance, on calcul toutes les possibilitées de toutes les pieces alliés afin de savoir si elles peuvent défendre le roi
 	plateau = fen.partie["plateau"]
 	for e in plateau:
+		print(e)
 		if plateau[e] != None and plateau[e].equipe != fen.partie["actif"].equipe:
-			if plateau[e].cases_possibles(plateau) != []:
-				print("ok 1")
-				return True
+			possibilites = attention_messir(fen, plateau[e].cases_possibles(plateau))
+			if possibilites != []:
+				print("ok1 ##", e, "##", possibilites)
+				return False
 	print("ok 2")
-	return False
+	return True
 
 
 
