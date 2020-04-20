@@ -71,10 +71,10 @@ class Tour():
 
 	def cases_possibles(self, plateau):
 		possibilites = []
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, 1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, -1)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, 1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, -1, self.equipe)
 		return possibilites
 
 
@@ -90,10 +90,10 @@ class Fou():
 
 	def cases_possibles(self, plateau):
 		possibilites = []
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 1)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 1, self.equipe)
 		return possibilites
 
 
@@ -109,18 +109,18 @@ class Dame():
 
 	def cases_possibles(self, plateau):
 		possibilites = []
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, 1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, -1)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 1)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 0, 1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, -1, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 1, self.equipe)
 		return possibilites
 		possibilites = []
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0)
-		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, 1, 0, self.equipe)
+		possibilites += obtenir_possibilites(plateau, self.i, self.j, -1, 0, self.equipe)
 
 
 class Roi():
@@ -133,8 +133,10 @@ class Roi():
 		self.image_name = IMAGES[f"{self.lettre}_{self.equipe}"]
 		self.image = obtenir_image(self.image_name)
 
-	def cases_possibles(self, plateau):
+	def cases_possibles(self, plateau,
+						menace=True):  # Le menace sert à dire si le roi qui apelle la fonction est réel ou fictif
 		possibilites = []
+		plateau[f"{self.i}{self.j}"] = None
 		for i in range(-1, 2):
 			for j in range(-1, 2):
 				if (i, j) != (0, 0):
@@ -143,7 +145,64 @@ class Roi():
 						if plateau[tuple_to_string(case)] == None or plateau[
 							tuple_to_string(case)].equipe != self.equipe:
 							possibilites.append(tuple_to_string(case))
+		if menace:
+			possibilites, d = self.possibilite_menace(plateau, possibilites)
+		plateau[f"{self.i}{self.j}"] = self
 		return possibilites
+
+	def possibilite_menace(self, plateau, possibilite):
+		cases_sures = possibilite[:]
+		cases_dangereuses = []
+		for e in possibilite:  # On verifi chaque case où peut aller le roi pour voir si elle est dangereuse
+			if self.verification_cavalier(plateau, e[0], e[1], cases_sures) or \
+					self.verification_tour(plateau, e[0], e[1], cases_sures) or \
+					self.verification_fou(plateau, e[0], e[1], cases_sures) or \
+					self.verification_pion(plateau, e[0], e[1], cases_sures):
+				# self.verification_roi(plateau, e[0], e[1], cases_sures): #Ne marche pas encore
+				cases_sures.remove(e)
+				cases_dangereuses.append(e)
+		return cases_sures, cases_dangereuses
+
+	def verification_tour(self, plateau, i, j, cases_a_verifier):
+		tour = Tour(self.equipe, int(i), int(j))  # Pareil pour les tours et la moitié du mouvement de la dame
+		for case in tour.cases_possibles(plateau):
+			if type(plateau[case]) == Tour or type(plateau[case]) == Dame:
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
+
+	def verification_roi(self, plateau, i, j, cases_a_verifier):
+		roi = Roi(self.equipe, int(i), int(j))  # De même pour le roi adverse
+		for case in roi.cases_possibles(plateau, False):
+			if type(plateau[case]) == Roi:
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
+
+	def verification_fou(self, plateau, i, j, cases_a_verifier):
+		fou = Fou(self.equipe, int(i), int(j))  # On detecte  fou et dame en diagonale
+		for case in fou.cases_possibles(plateau):
+			if type(plateau[case]) == Fou or type(plateau[case]) == Dame:
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
+
+	def verification_cavalier(self, plateau, i, j, cases_a_verifier):
+		cav = Cavalier(self.equipe, int(i), int(
+			j))  # On creer un cavalier fictif qui va verifier si le case où veux aller le roi est menacée
+		for case in cav.cases_possibles(plateau):
+			if type(plateau[case]) == Cavalier:
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
+
+	def verification_pion(self, plateau, i, j, cases_a_verifier):
+		pion = Pion(self.equipe, int(i), int(j), True)
+		for case in pion.cases_possibles(plateau):
+			if type(plateau[case]) == Pion:
+				if f"{i}{j}" in cases_a_verifier:
+					return True
+		return False
 
 
 class Cavalier():
@@ -181,25 +240,22 @@ class Cavalier():
 		return possibilites
 
 
-def obtenir_possibilites(plateau, i, j, a, b):
-	if plateau[tuple_to_string((i, j))] != None:
-		n = 0
-		m = 0
-		possibilites = []
-		equipe = plateau[tuple_to_string((i, j))].equipe
-		while True:
-			n += 1
-			m += 1
-			case = (i + n * a, j + m * b)
-			if case_hors_plateau(case):
-				return possibilites
-			if plateau[tuple_to_string(case)] == None:
+def obtenir_possibilites(plateau, i, j, a, b, equipe):
+	n = 0
+	m = 0
+	possibilites = []
+	while True:
+		n += 1
+		m += 1
+		case = (i + n * a, j + m * b)
+		if case_hors_plateau(case):
+			return possibilites
+		if plateau[tuple_to_string(case)] == None:
+			possibilites.append(tuple_to_string(case))
+		else:
+			if plateau[tuple_to_string(case)].equipe != equipe:
 				possibilites.append(tuple_to_string(case))
-			else:
-				if plateau[tuple_to_string(case)].equipe != equipe:
-					possibilites.append(tuple_to_string(case))
-				return possibilites
-	return []
+			return possibilites
 
 
 """Fonctions utilitaires"""
@@ -223,3 +279,4 @@ def case_hors_plateau(coord):
 		return True
 	else:
 		return False
+
