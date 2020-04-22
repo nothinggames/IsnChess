@@ -11,7 +11,8 @@ class Case():
 		self.fen = fen
 		self.i, self.j = i, j
 		self.image_piece = None
-		self.image_possibilite = None
+		self.image_possibilite1 = None
+		self.image_possibilite2 = None
 		width = (fen.canvas.winfo_width()-100)//8
 		height = (fen.canvas.winfo_height()-100)//8
 		self.canvas = Canvas(fen.canvas, bg=self.couleur_cases(), width=width, height=height, border=0, highlightthickness=0)
@@ -34,13 +35,17 @@ class Case():
 		self.image_piece = self.canvas.create_image(self.canvas.winfo_reqwidth()//2, self.canvas.winfo_reqheight()//2, image=piece.image)
 
 	def possibilite(self, p):
-		if self.image_possibilite != None:
-			self.canvas.delete(self.image_possibilite)
-			self.image_possibilite = None
+		if self.image_possibilite1 != None:
+			self.canvas.delete(self.image_possibilite1)
+			self.canvas.delete(self.image_possibilite2)
+			self.image_possibilite2 = None
 		if p == True:
 			size = 12
-			self.image_possibilite = self.canvas.create_oval(self.canvas.winfo_reqwidth()//2-size, self.canvas.winfo_reqheight()//2-size, self.canvas.winfo_reqwidth()//2+size, self.canvas.winfo_reqheight()//2+size,
-				fill="#73706a", width=0)
+			self.image_possibilite1 = self.canvas.create_oval(self.canvas.winfo_reqwidth()//2-size, self.canvas.winfo_reqheight()//2-size, self.canvas.winfo_reqwidth()//2+size, self.canvas.winfo_reqheight()//2+size,
+				fill="#545450", width=0)
+			size = 7
+			self.image_possibilite2 = self.canvas.create_oval(self.canvas.winfo_reqwidth()//2-size, self.canvas.winfo_reqheight()//2-size, self.canvas.winfo_reqwidth()//2+size, self.canvas.winfo_reqheight()//2+size,
+				fill="#2e2e2b", width=0)
 
 
 	def click(self, e):
@@ -49,9 +54,9 @@ class Case():
 		if fen.partie["terminee"] == False:
 			if fen.partie["possibilites"] == []:
 				if fen.partie["plateau"][tuple_to_string((i, j))] != None and fen.partie["plateau"][tuple_to_string((i, j))].equipe == fen.partie["joueur"]:
-					fen.partie["possibilites"] = fen.partie["plateau"][tuple_to_string((i, j))].cases_possibles(fen.partie["plateau"])
 					fen.partie["actif"] = fen.partie["plateau"][tuple_to_string((i, j))]
-					fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"])
+					fen.partie["possibilites"] = fen.partie["plateau"][tuple_to_string((i, j))].cases_possibles(fen.partie["plateau"])
+					fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"], fen.partie["actif"])
 			else:
 				if tuple_to_string((i, j)) in fen.partie["possibilites"]:
 					fen.partie["possibilites"] = []
@@ -63,7 +68,7 @@ class Case():
 						tuple_to_string((i, j))].equipe == fen.partie["joueur"]:
 						fen.partie["possibilites"] = fen.partie["plateau"][f'{i}{j}'].cases_possibles(fen.partie["plateau"])
 						fen.partie["actif"] = fen.partie["plateau"][f'{i}{j}']
-						fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"])
+						fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"], fen.partie["actif"])
 					else:
 						fen.partie["possibilites"] = []
 						fen.partie["actif"] = None
@@ -255,7 +260,6 @@ def passer_tour(fen):
 		mat = est_mat(fen)#On verifie maintenant le mat
 		if mat:
 			fen.partie["terminee"] = True
-			print([fen.partie["actif"].equipe])
 			fen.boutons_cases[tuple_to_string(fen.partie["positions_rois"][fen.partie['joueur']])].canvas["bg"] = "red"
 			PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher(f"Le joueur {fen.partie['joueur']} a perdu !")
 		else:
@@ -271,7 +275,7 @@ class PieceMangees():
 		self.coords = {"blanc": 0, "noir": self.canvas.winfo_reqwidth()//2}
 
 	def ajouter_image(self, equipe, image):
-		self.pieces[equipe].append(obtenir_image(image, self.canvas.winfo_reqwidth()//2, self.canvas.winfo_reqheight()//15))
+		self.pieces[equipe].append(obtenir_image(image, self.canvas.winfo_reqwidth()//2, self.canvas.winfo_reqheight()//15, equipe))
 		self.canvas.create_image(self.coords[equipe], (len(self.pieces[equipe]))*self.canvas.winfo_height()//15, anchor=SW, image=self.pieces[equipe][len(self.pieces[equipe])-1])
 
 
@@ -298,20 +302,24 @@ def afficher_infos(fen):
 	fen.affichage["bouton_menu"] = Button(fen, text="Quitter", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: afficher_input_sauvegarde(fen), border=0, relief=SUNKEN)
 	fen.affichage["bouton_menu"].bind("<Enter>", fen.entree_bouton)
 	fen.affichage["bouton_menu"].bind("<Leave>", fen.sortie_bouton)
+	fen.affichage["bouton_matchnul"] = Button(fen, text="Match Nul", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: afficher_input_sauvegarde(fen), border=0, relief=SUNKEN)
+	fen.affichage["bouton_matchnul"].bind("<Enter>", fen.entree_bouton)
+	fen.affichage["bouton_matchnul"].bind("<Leave>", fen.sortie_bouton)
 	fen.affichage_id["bouton_menu"] = fen.canvas.create_window(fen.canvas.winfo_width() - 50, fen.canvas.winfo_height() - 22, window=fen.affichage["bouton_menu"], anchor=CENTER)
+	fen.affichage_id["bouton_matchnul"] = fen.canvas.create_window(fen.canvas.winfo_width() - 50, fen.canvas.winfo_height() - 66, window=fen.affichage["bouton_matchnul"], anchor=CENTER)
 	fen.affichage_id["text_joueur"] = fen.canvas.create_text(10, 20, text="☺ Tour du joueur " + fen.partie["joueur"], fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 	fen.affichage_id["text_tour"] = fen.canvas.create_text(10, 60, text="↔ Tour n°" + str(fen.partie["tour"]), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 
-	fen.affichage_id["text_temps_ecoule"] = fen.canvas.create_text(fen.winfo_width()//2, 20, text="⏲ Temps écoulé: 00:00:00", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+	fen.affichage_id["text_temps_ecoule"] = fen.canvas.create_text(fen.winfo_width()//2.5, 20, text="⏲ Temps écoulé: 00:00:00", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 	if fen.partie["type"] == "blitz":
-		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text=strftime("{} Temps restant: %H:%M:%S", gmtime(
+		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2.5, 60, text=strftime("{} Temps restant: %H:%M:%S", gmtime(
 		fen.partie["temps_passe"] - time())).replace("{}", "⏲"), fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 	else:
-		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2, 60, text="⏲ Temps restant: ∞", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
+		fen.affichage_id["text_temps_restant"] = fen.canvas.create_text(fen.winfo_width()//2.5, 60, text="⏲ Temps restant: ∞", fill=fen.bouton_fg, font="Helvetica 16", anchor=NW)
 	fen.after(1000, lambda: actualiser_horloges(fen))
 
-	fen.affichage["canvas_mangees"] = PieceMangees(fen, 100-2*100//8, fen.canvas.winfo_height()//1.35)
-	fen.affichage_id["canvas_mangees"] = fen.canvas.create_window(fen.canvas.winfo_width() - 100+100//8, 110, window=fen.affichage["canvas_mangees"].canvas, anchor=NW)
+	fen.affichage["canvas_mangees"] = PieceMangees(fen, 100-2*100//8, fen.canvas.winfo_height()//1.22)
+	fen.affichage_id["canvas_mangees"] = fen.canvas.create_window(fen.canvas.winfo_width() - 100+100//8, 20, window=fen.affichage["canvas_mangees"].canvas, anchor=NW)
 	fen.after(10, lambda: afficher_mangees(fen)) #Il est necessair d'attendre un peu pour que la fenêtre s'initialise correctement
 
 def afficher_mangees(fen):
@@ -445,28 +453,30 @@ def est_mat(fen):
 	else:
 		return False
 
-def attention_messir(fen, possibilites):
+def attention_messir(fen, possibilites, piece):
 	possibilite_finales = possibilites.copy()
-	if type(fen.partie["actif"]) != classes.Roi:
+	if type(piece) != classes.Roi:
 		for e in possibilites:
 			plateau_fictif = fen.partie["plateau"].copy()
-			plateau_fictif[e] = fen.partie["actif"]
-			plateau_fictif[f"{fen.partie['actif'].i}{fen.partie['actif'].j}"] = None
+			plateau_fictif[e] = piece
+			plateau_fictif[f"{piece.i}{piece.j}"] = None
 			if est_echec(fen, plateau_fictif):
 				possibilite_finales.remove(e)
 	return possibilite_finales
 
 
 def mouvement_toutes_pieces(fen): #Consomme beaucoup de puissance, on calcul toutes les possibilitées de toutes les pieces alliés afin de savoir si elles peuvent défendre le roi
+	if fen.partie["joueur"] == "noir":
+		joueur = "blanc"
+	else:
+		joueur = "noir"
 	plateau = fen.partie["plateau"]
 	for e in plateau:
-		print(e)
 		if plateau[e] != None and plateau[e].equipe != fen.partie["actif"].equipe:
-			possibilites = attention_messir(fen, plateau[e].cases_possibles(plateau))
+			possibilites = plateau[e].cases_possibles(plateau)
+			possibilites = attention_messir(fen, possibilites, plateau[e])
 			if possibilites != []:
-				print("ok1 ##", e, "##", possibilites)
 				return False
-	print("ok 2")
 	return True
 
 
