@@ -1,8 +1,15 @@
-import os
+from os import *
 from tkinter import *
 from tkinter import filedialog
 
 from echec import *
+
+try:
+	from simpleaudio import *
+	from random import choice
+	MUSIC = True
+except:
+	MUSIC = False
 
 class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui apparaissent tout de même dans la barre de tâches
 	def __init__(self, *args, **kwargs):
@@ -46,6 +53,30 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.affichage_id["popup"] = None
 		self.couleur_case_noire = "black"
 		self.couleur_case_blanche = "white"
+
+		if MUSIC:
+			self.musiques = None
+			self.musique_en_cours = None
+			self.boucle_musiques()
+
+	def boucle_musiques(self):
+		if self.musiques == None:
+			self.musiques = []
+			for fichier in listdir("musiques"):
+				if fichier.endswith(".wav"):
+					self.musiques.append(fichier)
+			if self.musiques == []:
+				return
+			self.musiques_a_jouer = self.musiques.copy()
+
+		if self.musique_en_cours == None or not self.musique_en_cours.is_playing():
+			if self.musiques_a_jouer == []:
+				self.musiques_a_jouer = self.musiques.copy()
+			musique = choice(self.musiques_a_jouer)
+			self.musiques_a_jouer.remove(musique)
+			musique = WaveObject.from_wave_file("musiques/" + musique)
+			self.musique_en_cours = musique.play()
+		self.after(1000, self.boucle_musiques)
 
 	def apparition(self, e):
 		self.wm_deiconify()
@@ -93,7 +124,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.boutons[2]["command"] = self.ouvrir_accueil
 
 	def ouvrir_charger(self):
-		charger_partie(self, filedialog.askopenfilename(initialdir=os.getcwd()+"/parties", title="Choisissez une partie",
+		charger_partie(self, filedialog.askopenfilename(initialdir=getcwd()+"/parties", title="Choisissez une partie",
 								   filetypes=[("Sauvegarde de partie", "*.json")]))
 
 	def entree_bouton(self, e):
@@ -116,6 +147,7 @@ def centrer_fenetre(fen):
 	x = (fen.winfo_screenwidth() // 2) - (width // 2)
 	y = (fen.winfo_screenheight() // 2) - (height // 2)
 	fen.geometry('{}x{}+{}+{}'.format(width, height, x, y))
+
 
 app = Fenetre()
 app.little.title("Echec")
