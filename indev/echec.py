@@ -54,9 +54,9 @@ class Case():
 		if fen.partie["terminee"] == False:
 			if fen.partie["possibilites"] == []:
 				if fen.partie["plateau"][tuple_to_string((i, j))] != None and fen.partie["plateau"][tuple_to_string((i, j))].equipe == fen.partie["joueur"]:
-					fen.partie["possibilites"] = fen.partie["plateau"][tuple_to_string((i, j))].cases_possibles(fen.partie["plateau"])
 					fen.partie["actif"] = fen.partie["plateau"][tuple_to_string((i, j))]
-					fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"])
+					fen.partie["possibilites"] = fen.partie["plateau"][tuple_to_string((i, j))].cases_possibles(fen.partie["plateau"])
+					fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"], fen.partie["actif"])
 			else:
 				if tuple_to_string((i, j)) in fen.partie["possibilites"]:
 					fen.partie["possibilites"] = []
@@ -68,7 +68,7 @@ class Case():
 						tuple_to_string((i, j))].equipe == fen.partie["joueur"]:
 						fen.partie["possibilites"] = fen.partie["plateau"][f'{i}{j}'].cases_possibles(fen.partie["plateau"])
 						fen.partie["actif"] = fen.partie["plateau"][f'{i}{j}']
-						fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"])
+						fen.partie["possibilites"] = attention_messir(fen, fen.partie["possibilites"], fen.partie["actif"])
 					else:
 						fen.partie["possibilites"] = []
 						fen.partie["actif"] = None
@@ -260,7 +260,6 @@ def passer_tour(fen):
 		mat = est_mat(fen)#On verifie maintenant le mat
 		if mat:
 			fen.partie["terminee"] = True
-			print([fen.partie["actif"].equipe])
 			fen.boutons_cases[tuple_to_string(fen.partie["positions_rois"][fen.partie['joueur']])].canvas["bg"] = "red"
 			PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher(f"Le joueur {fen.partie['joueur']} a perdu !")
 		else:
@@ -454,35 +453,28 @@ def est_mat(fen):
 	else:
 		return False
 
-def attention_messir(fen, possibilites):
+def attention_messir(fen, possibilites, piece):
 	possibilite_finales = possibilites.copy()
-	if type(fen.partie["actif"]) != classes.Roi:
+	if type(piece) != classes.Roi:
 		for e in possibilites:
 			plateau_fictif = fen.partie["plateau"].copy()
-			plateau_fictif[e] = fen.partie["actif"]
-			plateau_fictif[f"{fen.partie['actif'].i}{fen.partie['actif'].j}"] = None
+			plateau_fictif[e] = piece
+			plateau_fictif[f"{piece.i}{piece.j}"] = None
 			if est_echec(fen, plateau_fictif):
 				possibilite_finales.remove(e)
 	return possibilite_finales
 
 
 def mouvement_toutes_pieces(fen): #Consomme beaucoup de puissance, on calcul toutes les possibilitées de toutes les pieces alliés afin de savoir si elles peuvent défendre le roi
+	if fen.partie["joueur"] == "noir":
+		joueur = "blanc"
+	else:
+		joueur = "noir"
 	plateau = fen.partie["plateau"]
 	for e in plateau:
-		print(e)
 		if plateau[e] != None and plateau[e].equipe != fen.partie["actif"].equipe:
-			possibilites = attention_messir(fen, plateau[e].cases_possibles(plateau))
+			possibilites = plateau[e].cases_possibles(plateau)
+			possibilites = attention_messir(fen, possibilites, plateau[e])
 			if possibilites != []:
-				print("ok1 ##", e, "##", possibilites)
 				return False
-	print("ok 2")
 	return True
-
-
-
-
-
-
-
-
-
