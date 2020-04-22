@@ -265,11 +265,25 @@ def tuple_to_string(a):
 	return f"{a[0]}{a[1]}"
 
 
-def obtenir_image(chemin, width=50, height=50):
+def obtenir_image(chemin, width=50, height=50, team=None):
 	img = Image.open(chemin)
+	if team != None:
+		if team == "blanc":
+			img.putdata(conserver_couleur(img.getdata(), (230, 230, 230), 25))
+		else:
+			img.putdata(conserver_couleur(img.getdata(), (25, 25, 25), 25))
 	img = img.resize((width, height))
 	photoImg = ImageTk.PhotoImage(img)
 	return photoImg
+
+def conserver_couleur(datas, couleur, seuil):
+	newData = []
+	for item in datas:
+		if item[0] not in range(couleur[0]-seuil, couleur[0]+seuil+1) or item[1] not in range(couleur[1]-seuil, couleur[1]+seuil+1) or item[2] not in range(couleur[2]-seuil, couleur[2]+seuil+1):
+			newData.append((255, 255, 255, 0))
+		else:
+			newData.append(item)
+	return newData
 
 
 def case_hors_plateau(coord):
