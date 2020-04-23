@@ -91,6 +91,8 @@ def nouvelle_partie(fen, type):
 	fen.partie["pieces_mangees_noir"] = []
 	fen.partie["positions_rois"] = {"blanc":"04", "noir":"73"}
 	fen.partie["terminee"] = False
+	fen.partie["matchnul"] = False
+	fen.partie["case_rouge"] = None
 	afficher_partie(fen)
 
 def sauvegarder_partie(nom, partie):
@@ -102,7 +104,10 @@ def sauvegarder_partie(nom, partie):
 			"temps_enregistre": time()-partie["debut"]+partie["temps_enregistre"],
 			"pieces_mangees_blanc": partie[f"pieces_mangees_blanc"],
 			"pieces_mangees_noir": partie[f"pieces_mangees_noir"],
-			"plateau": plateau_to_lettres(partie["plateau"])
+			"plateau": plateau_to_lettres(partie["plateau"]),
+			"terminee": partie["terminee"],
+			"matchnul": partie["matchnul"],
+			"case_rouge": partie["case_rouge"]
 		}
 		if partie["type"] == "blitz":
 			donnees["temps_restant"] = partie["temps_passe"] - time()
@@ -125,7 +130,10 @@ def charger_partie(fen, fichier):
 				"plateau": lettres_to_plateau(donnees["plateau"]),
 				"actif": None,
 				"possibilites": [],
-				"positions_rois" : {}
+				"positions_rois" : {},
+				"terminee": donnees["terminee"],
+				"matchnul": donnees["matchnul"],
+				"case_rouge": donnees["case_rouge"]
 			}
 			for e in fen.partie["plateau"]:
 				if type(fen.partie["plateau"][e]) == classes.Roi:
@@ -133,13 +141,19 @@ def charger_partie(fen, fichier):
 						fen.partie["positions_rois"]["noir"] = e
 					else:
 						fen.partie["positions_rois"]["blanc"] = e
-			if len(fen.partie["positions_rois"]) == 2:
-				fen.partie["terminee"] = False
-			else:
-				fen.partie["terminee"] = True
+
+
+
 			if donnees["type"] == "blitz":
 				fen.partie["temps_passe"] = time() + donnees["temps_restant"]
 			afficher_partie(fen)
+
+			if fen.partie["case_rouge"] != None:
+				fen.boutons_cases[fen.partie["case_rouge"]].canvas["bg"] = "red"
+			if fen.partie["matchnul"]:
+				PopupInfo(fen, width=fen.winfo_width() // 1.25, height=fen.winfo_height() // 3, bg="#3d3937", border=0,
+						  highlightthickness=0).afficher("La partie a été décrétée nulle !")
+
 
 def quitter_partie(fen):
 	fen.canvas.delete("all")
@@ -260,6 +274,7 @@ def passer_tour(fen):
 		mat = est_mat(fen)#On verifie maintenant le mat
 		if mat:
 			fen.partie["terminee"] = True
+			fen.partie["case_rouge"] = tuple_to_string(fen.partie["positions_rois"][fen.partie['joueur']])
 			fen.boutons_cases[tuple_to_string(fen.partie["positions_rois"][fen.partie['joueur']])].canvas["bg"] = "red"
 			PopupInfo(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//3, bg="#3d3937", border=0, highlightthickness=0).afficher(f"Le joueur {fen.partie['joueur']} a perdu !")
 		else:
@@ -302,7 +317,7 @@ def afficher_infos(fen):
 	fen.affichage["bouton_menu"] = Button(fen, text="Quitter", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: afficher_input_sauvegarde(fen), border=0, relief=SUNKEN)
 	fen.affichage["bouton_menu"].bind("<Enter>", fen.entree_bouton)
 	fen.affichage["bouton_menu"].bind("<Leave>", fen.sortie_bouton)
-	fen.affichage["bouton_matchnul"] = Button(fen, text="Match Nul", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: afficher_input_sauvegarde(fen), border=0, relief=SUNKEN)
+	fen.affichage["bouton_matchnul"] = Button(fen, text="Match Nul", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: afficher_input_matchnul(fen), border=0, relief=SUNKEN)
 	fen.affichage["bouton_matchnul"].bind("<Enter>", fen.entree_bouton)
 	fen.affichage["bouton_matchnul"].bind("<Leave>", fen.sortie_bouton)
 	fen.affichage_id["bouton_menu"] = fen.canvas.create_window(fen.canvas.winfo_width() - 50, fen.canvas.winfo_height() - 22, window=fen.affichage["bouton_menu"], anchor=CENTER)
@@ -368,6 +383,31 @@ class PopupInfo(Canvas):
 		self._root().affichage_id["popup"] = self._root().canvas.create_window(self._root().winfo_width()//2, self._root().winfo_height()//2, window=self)
 
 
+class PopupMatchNul(Canvas):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		fen = self._root()
+		self.bouton_valider = Button(self, text="Valider", command=self.valider, bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 16", border=0, relief=SUNKEN)
+		self.bouton_annuler = Button(self, text="Annuler", command=self.destroy, bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 16", border=0, relief=SUNKEN)
+
+		self.bouton_valider.bind("<Enter>", fen.entree_bouton)
+		self.bouton_valider.bind("<Leave>", fen.sortie_bouton)
+		self.bouton_annuler.bind("<Enter>", fen.entree_bouton)
+		self.bouton_annuler.bind("<Leave>", fen.sortie_bouton)
+
+		self.create_text(self.winfo_reqwidth()//2, self.winfo_reqheight()//3, text="Décréter match nul ?", font="Helvetica 18", fill=fen.bouton_fg)
+		self.create_window(self.winfo_reqwidth()//2-self.winfo_reqwidth()//6, self.winfo_reqheight()//1.25, window=self.bouton_valider)
+		self.create_window(self.winfo_reqwidth()//2+self.winfo_reqwidth()//6, self.winfo_reqheight()//1.25, window=self.bouton_annuler)
+
+	def valider(self):
+		afficher_input_sauvegarde(self._root(), nul=True)
+
+	def afficher(self):
+		if self._root().affichage_id["popup"] != None:
+			self._root().canvas.delete(self._root().affichage_id["popup"])
+		self._root().affichage_id["popup"] = self._root().canvas.create_window(self._root().winfo_width()//2, self._root().winfo_height()//2, window=self)
+
+
 
 class PopupSauvegarde(Canvas):
 	def __init__(self, *args, **kwargs):
@@ -397,6 +437,9 @@ class PopupSauvegarde(Canvas):
 		nom = self.entree_var.get()
 		validation = self.est_valide(nom)
 		if validation == "Nom valide." or validation == "Attention: vous allez écraser une sauvegarde !":
+			if self.nul:
+				self._root().partie["terminee"] = True
+				self._root().partie["matchnul"] = True
 			sauvegarder_partie(nom, self._root().partie)
 			quitter_partie(self._root())
 			if self.fermer:
@@ -425,15 +468,19 @@ class PopupSauvegarde(Canvas):
 					message = "Nom valide."
 		return message
 
-	def afficher(self, fermer):
+	def afficher(self, fermer, nul):
 		self.fermer = fermer
+		self.nul = nul
 		if self._root().affichage_id["popup"] != None:
 			self._root().canvas.delete(self._root().affichage_id["popup"])
 		self._root().affichage_id["popup"] = self._root().canvas.create_window(self._root().winfo_width()//2, self._root().winfo_height()//2, window=self)
 
 
-def afficher_input_sauvegarde(fen, fermer=False): #Sert à afficher la fenêtre de demande de sauvegarde
-	PopupSauvegarde(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//2, bg="#3d3937", border=0, highlightthickness=0).afficher(fermer)
+def afficher_input_matchnul(fen): #Sert à afficher la fenêtre de demande de sauvegarde
+	PopupMatchNul(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//2, bg="#3d3937", border=0, highlightthickness=0).afficher()
+
+def afficher_input_sauvegarde(fen, fermer=False, nul=False): #Sert à afficher la fenêtre de demande de sauvegarde
+	PopupSauvegarde(fen, width=fen.winfo_width()//1.25, height=fen.winfo_height()//2, bg="#3d3937", border=0, highlightthickness=0).afficher(fermer, nul)
 
 
 """Fonctions d'échec, mat et roi non déplaçable"""
