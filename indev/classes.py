@@ -17,8 +17,6 @@ IMAGES = {
 	"C_noir": "images/cavalier_noir.png"
 }
 
-
-# Pion terminé à 95%, il manque la promotion
 class Pion():
 	def __init__(self, equipe, i, j, deplace=False):
 		self.equipe = equipe
@@ -153,7 +151,7 @@ class Roi():
 	def possibilite_menace(self, plateau, possibilite):
 		cases_sures = possibilite[:]
 		cases_dangereuses = []
-		for e in possibilite:  # On verifi chaque case où peut aller le roi pour voir si elle est dangereuse
+		for e in possibilite:  # On verifie chaque case où peut aller le roi pour voir si elle est dangereuse
 			if self.verification_cavalier(plateau, e[0], e[1], cases_sures) or \
 					self.verification_tour(plateau, e[0], e[1], cases_sures) or \
 					self.verification_fou(plateau, e[0], e[1], cases_sures) or \

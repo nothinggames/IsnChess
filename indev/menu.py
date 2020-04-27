@@ -31,6 +31,8 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.barre_outils = Frame(self, background="#292626")
 		self.barre_outils.grid(row=0, column=0,)
 
+
+
 		self.bouton_reduire = Button(self.barre_outils, width=3, height=1, bg="#292626", activebackground="#1f1c1c", text="-", font="Helvetica 10 bold", fg="white", activeforeground="white", border=0, relief=SUNKEN, command=self.little.iconify)
 		self.bouton_reduire.grid(row=0, column=1)
 		self.bouton_fermer = Button(self.barre_outils, width=3, height=1, bg="#960d03", activebackground="#6e0a02", text="x", font="Helvetica 10 bold", fg="white", activeforeground="white", border=0, relief=SUNKEN, command=self.quit)
@@ -42,8 +44,8 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.bouton_fermer.bind("<Enter>", self.entree_bouton)
 		self.bouton_fermer.bind("<Leave>", self.sortie_bouton)
 
-		centrer_fenetre(self.little)
 		centrer_fenetre(self)
+		centrer_fenetre(self.little)
 
 		self.afficher_accueil()
 
@@ -59,7 +61,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 			self.musique_en_cours = None
 			self.boucle_musiques()
 
-	def boucle_musiques(self):
+	def boucle_musiques(self): #Sert a repeter les musiques en boucle durant la partie
 		if self.musiques == None:
 			self.musiques = []
 			for fichier in listdir("musiques"):
@@ -78,14 +80,14 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 			self.musique_en_cours = musique.play()
 		self.after(1000, self.boucle_musiques)
 
-	def apparition(self, e):
+	def apparition(self, e): #Fait apparaître  la fenêtre
 		self.wm_deiconify()
 		self.lift()
-	def disparition(self, e):
+	def disparition(self, e): #Fait disparaître la fenêtre
 		self.wm_withdraw()
 		self.lift()
 
-	def afficher_accueil(self):
+	def afficher_accueil(self): #Sert à ouvrir la page d'accueil
 		self.partie = {"type": "menu"}
 		self.bouton_fermer["command"] = self.quit
 		self.canvas.create_image(0, 0, image=self.background_image, anchor=NW)
@@ -107,7 +109,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.b3 = self.canvas.create_window(self.canvas.winfo_width()//2, self.canvas.winfo_height()//2+self.canvas.winfo_height()//5, window=self.boutons[2], anchor=CENTER)
 
 
-	def ouvrir_accueil(self):
+	def ouvrir_accueil(self): #Définit les boutons pour l'accueil
 		self.boutons[0]["text"] = "Nouvelle Partie"
 		self.boutons[1]["text"] = "Charger une Partie"
 		self.boutons[2]["text"] = "Quitter"
@@ -115,7 +117,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.boutons[1]["command"] = self.ouvrir_charger
 		self.boutons[2]["command"] = self.little.quit
 
-	def ouvrir_nouvelle(self):
+	def ouvrir_nouvelle(self): #Définit les boutons pour une nouvelle partie
 		self.boutons[0]["text"] = "Partie Normale"
 		self.boutons[1]["text"] = "Partie Blitz"
 		self.boutons[2]["text"] = "Retour"
@@ -123,7 +125,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		self.boutons[1]["command"] = lambda: nouvelle_partie(self._root(), "blitz")
 		self.boutons[2]["command"] = self.ouvrir_accueil
 
-	def ouvrir_charger(self):
+	def ouvrir_charger(self): #Permet de choisir la partie a charger au format json
 		charger_partie(self, filedialog.askopenfilename(initialdir=getcwd()+"/parties", title="Choisissez une partie",
 								   filetypes=[("Sauvegarde de partie", "*.json")]))
 
@@ -140,7 +142,7 @@ class Fenetre(Tk): #L'idée et de créer une fenêtre sans brodures mais qui app
 		if color != None:
 			e.widget["bg"] = color
 
-def centrer_fenetre(fen):
+def centrer_fenetre(fen): #Permet de centrer une fenêtre
 	fen.update_idletasks()
 	width = fen.winfo_width()
 	height = fen.winfo_height()
@@ -150,5 +152,9 @@ def centrer_fenetre(fen):
 
 
 app = Fenetre()
+app.title("Echec")
+app.iconbitmap("logo.ico")
 app.little.title("Echec")
+app.little.iconbitmap("logo.ico")
 app.mainloop()
+#app.mainloop()

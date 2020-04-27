@@ -6,7 +6,7 @@ import json
 import classes
 from classes import *
 
-class Case():
+class Case(): #Classe qui représente une case du plateau
 	def __init__(self, fen, i, j):
 		self.fen = fen
 		self.i, self.j = i, j
@@ -26,7 +26,7 @@ class Case():
 			return self.fen.couleur_case_noire
 		else:
 			return self.fen.couleur_case_blanche
-	def placer_piece(self, piece):
+	def placer_piece(self, piece): #Place une pièce au niveau graphique
 		if self.image_piece != None:
 			self.canvas.delete(self.image_piece)
 			self.image_piece = None
@@ -34,7 +34,7 @@ class Case():
 			return
 		self.image_piece = self.canvas.create_image(self.canvas.winfo_reqwidth()//2, self.canvas.winfo_reqheight()//2, image=piece.image)
 
-	def possibilite(self, p):
+	def possibilite(self, p): #Fonction permettant d'afficher les cases possibles au niveau de l'interface
 		if self.image_possibilite1 != None:
 			self.canvas.delete(self.image_possibilite1)
 			self.canvas.delete(self.image_possibilite2)
@@ -47,8 +47,7 @@ class Case():
 			self.image_possibilite2 = self.canvas.create_oval(self.canvas.winfo_reqwidth()//2-size, self.canvas.winfo_reqheight()//2-size, self.canvas.winfo_reqwidth()//2+size, self.canvas.winfo_reqheight()//2+size,
 				fill="#2e2e2b", width=0)
 
-
-	def click(self, e):
+	def click(self, e): #Fonction appelée lors d'un click sur la case
 		fen = self.fen
 		i, j = self.i, self.j
 		if fen.partie["terminee"] == False:
@@ -75,7 +74,7 @@ class Case():
 			afficher_possibilites(fen)
 
 """Fonctions de parties"""
-def nouvelle_partie(fen, type):
+def nouvelle_partie(fen, type): #Sert a creer une nouvelle partie
 	fen.partie = {}
 	fen.partie["type"] = type
 	fen.partie["plateau"] = creer_plateau()
@@ -95,7 +94,7 @@ def nouvelle_partie(fen, type):
 	fen.partie["case_rouge"] = None
 	afficher_partie(fen)
 
-def sauvegarder_partie(nom, partie):
+def sauvegarder_partie(nom, partie): #Sert à sauvegarder une partie
 	with open("parties/" + nom + ".json", "w") as fichier:
 		donnees = {
 			"type": partie["type"],
@@ -113,7 +112,7 @@ def sauvegarder_partie(nom, partie):
 			donnees["temps_restant"] = partie["temps_passe"] - time()
 		json.dump(donnees, fichier, indent=4)
 
-def charger_partie(fen, fichier):
+def charger_partie(fen, fichier): #Sert à charger une partie à partir d'un fichier json
 	fen.partie = {}
 	if fichier != "":
 		fen.partie["plateau"] = {}
@@ -135,15 +134,12 @@ def charger_partie(fen, fichier):
 				"matchnul": donnees["matchnul"],
 				"case_rouge": donnees["case_rouge"]
 			}
-			for e in fen.partie["plateau"]:
+			for e in fen.partie["plateau"]: #Permet de récupérer la position de chacun des rois
 				if type(fen.partie["plateau"][e]) == classes.Roi:
 					if fen.partie["plateau"][e].equipe == "noir":
 						fen.partie["positions_rois"]["noir"] = e
 					else:
 						fen.partie["positions_rois"]["blanc"] = e
-
-
-
 			if donnees["type"] == "blitz":
 				fen.partie["temps_passe"] = time() + donnees["temps_restant"]
 			afficher_partie(fen)
@@ -155,12 +151,12 @@ def charger_partie(fen, fichier):
 						  highlightthickness=0).afficher("La partie a été décrétée nulle !")
 
 
-def quitter_partie(fen):
+def quitter_partie(fen): #Permet de quitter la partie en affichant l'accueil
 	fen.canvas.delete("all")
 	fen.afficher_accueil()
 
 """Création du plateau"""
-def creer_plateau():
+def creer_plateau(): #Permet de créer le plateau de jeu
 	plateau = {}
 	for i in range(8):
 		for j in range(8):
@@ -168,7 +164,7 @@ def creer_plateau():
 	initialiser_pieces(plateau)
 	return plateau
 
-def initialiser_pieces(plateau):
+def initialiser_pieces(plateau): #Permet le placement des pieces sur le plateau en début de partie
 	for i in range(8):
 		# Placement des pions
 		pion = Pion("blanc", 1, i)
@@ -197,15 +193,10 @@ def initialiser_pieces(plateau):
 
 
 """Fonctions utilitaires"""
-def tuple_to_string(a):
+def tuple_to_string(a): #Permet de passer de coordonnées sous forme de tuple à des coordonnées sous forme de string (utilsables dans un dictionnaire)
 	return f"{a[0]}{a[1]}"
 
-def str_to_bool(a):
-	if a == "True":
-		return True
-	return False
-
-def plateau_to_lettres(plateau):
+def plateau_to_lettres(plateau): #Convertit le plateau pour qu'il puisse être stocké dans un fichier json
 	final = {}
 	equipe = {"blanc": "B", "noir": "N"}
 	deplace = {"True": "T", "False": "F"}
@@ -217,7 +208,7 @@ def plateau_to_lettres(plateau):
 				final[tuple_to_string((i, j))] = "NNN"
 	return final
 
-def lettres_to_plateau(lettres):
+def lettres_to_plateau(lettres): #Processus inverse de la fonction precedente
 	plateau = {}
 	equipe = {"B": "blanc", "N": "noir"}
 	deplace = {"T": True, "F": False}
@@ -242,7 +233,7 @@ def lettres_to_plateau(lettres):
 	return plateau
 
 """Fonctions de jeu"""
-def deplacer(fen, piece, i, j):
+def deplacer(fen, piece, i, j): #Permet de déplacer une pièce
 	i0, j0 = piece.i, piece.j
 	fen.partie["plateau"][tuple_to_string((i0, j0))] = None
 	if type(piece) == classes.Pion: #Promotion
@@ -260,7 +251,7 @@ def deplacer(fen, piece, i, j):
 	piece.i, piece.j = i, j
 
 
-def passer_tour(fen):
+def passer_tour(fen): #Permet de passer au joueur suivant quand le tour est terminé
 	if fen.partie["joueur"] == "blanc":
 		fen.partie["joueur"] = "noir"
 	else:
@@ -282,7 +273,7 @@ def passer_tour(fen):
 
 
 """Fonctions d'affichage"""
-class PieceMangees():
+class PieceMangees(): #Classe qui gère le canvas des pièces mangées
 	def __init__(self, fen, width, height):
 		self.fen = fen
 		self.canvas = Canvas(fen, width=width, height=height, border=0, highlightthickness=0, bg="#262626")
@@ -294,26 +285,26 @@ class PieceMangees():
 		self.canvas.create_image(self.coords[equipe], (len(self.pieces[equipe]))*self.canvas.winfo_height()//15, anchor=SW, image=self.pieces[equipe][len(self.pieces[equipe])-1])
 
 
-def afficher_partie(fen):
+def afficher_partie(fen): #Permet les différents affichages durant la partie (plateau, pieces, bouton quitter/match nul)
 	afficher_plateau(fen, fen.partie["plateau"])
 	afficher_infos(fen)
 	fen.bouton_fermer["command"] = lambda: afficher_input_sauvegarde(fen, True)
 
-def afficher_plateau(fen, plateau):
+def afficher_plateau(fen, plateau): #Permet d'afficher le plateau
 	fen.canvas.delete("all")
 	for i in range(8):
 		for j in range(8):
 			fen.boutons_cases[tuple_to_string((i, j))] = Case(fen, i, j)
 			fen.boutons_cases[tuple_to_string((i, j))].placer_piece(plateau[tuple_to_string((i, j))])
 
-def afficher_possibilites(fen):
+def afficher_possibilites(fen): #Si une case est dans les possibilités de déplacement, on affiche un cercle par dessus
 	for case in fen.partie["plateau"]:
 		if case in fen.partie["possibilites"]:
 			fen.boutons_cases[case].possibilite(True)
 		else:
 			fen.boutons_cases[case].possibilite(False)
 
-def afficher_infos(fen):
+def afficher_infos(fen): #Cette fonction permet d'afficher les différents textes et boutons
 	fen.affichage["bouton_menu"] = Button(fen, text="Quitter", bg=fen.bouton_bg, fg=fen.bouton_fg, activebackground=fen.bouton_activebg, activeforeground=fen.bouton_activefg, font="Helvetica 14", command=lambda: afficher_input_sauvegarde(fen), border=0, relief=SUNKEN)
 	fen.affichage["bouton_menu"].bind("<Enter>", fen.entree_bouton)
 	fen.affichage["bouton_menu"].bind("<Leave>", fen.sortie_bouton)
@@ -337,17 +328,17 @@ def afficher_infos(fen):
 	fen.affichage_id["canvas_mangees"] = fen.canvas.create_window(fen.canvas.winfo_width() - 100+100//8, 20, window=fen.affichage["canvas_mangees"].canvas, anchor=NW)
 	fen.after(10, lambda: afficher_mangees(fen)) #Il est necessair d'attendre un peu pour que la fenêtre s'initialise correctement
 
-def afficher_mangees(fen):
+def afficher_mangees(fen): #Affiche les pièces mangées
 	for piece in fen.partie["pieces_mangees_blanc"]:
 		fen.affichage["canvas_mangees"].ajouter_image("blanc", IMAGES[piece.replace("\n", "") + "_blanc"])
 	for piece in fen.partie["pieces_mangees_noir"]:
 		fen.affichage["canvas_mangees"].ajouter_image("noir", IMAGES[piece.replace("\n", "") + "_noir"])
 
-def actualiser_affichage(fen):
+def actualiser_affichage(fen): #Permet d'actualiser la fenetre annoncant le passage d'un tour
 	fen.canvas.itemconfig(fen.affichage_id["text_joueur"], text="☺ Tour du joueur " + fen.partie["joueur"])
 	fen.canvas.itemconfig(fen.affichage_id["text_tour"], text="↔ Tour n°" + str(fen.partie["tour"]))
 
-def actualiser_horloges(fen):
+def actualiser_horloges(fen): #cette fonction s'occupe de gérer les timers durant la partie
 	if fen.partie["type"] == "menu":
 		return
 	if fen.partie["terminee"] == True:
@@ -365,7 +356,7 @@ def actualiser_horloges(fen):
 
 	fen.after(1000, lambda: actualiser_horloges(fen))
 
-class PopupInfo(Canvas):
+class PopupInfo(Canvas): #Affiche une popup sur l'écran
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		fen = self._root()
@@ -383,7 +374,7 @@ class PopupInfo(Canvas):
 		self._root().affichage_id["popup"] = self._root().canvas.create_window(self._root().winfo_width()//2, self._root().winfo_height()//2, window=self)
 
 
-class PopupMatchNul(Canvas):
+class PopupMatchNul(Canvas): #Affiche une popup pour confirmer un match nul
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		fen = self._root()
@@ -409,7 +400,7 @@ class PopupMatchNul(Canvas):
 
 
 
-class PopupSauvegarde(Canvas):
+class PopupSauvegarde(Canvas): #Affiche une popup pour sauvegarder
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		fen = self._root()
@@ -484,7 +475,7 @@ def afficher_input_sauvegarde(fen, fermer=False, nul=False): #Sert à afficher l
 
 
 """Fonctions d'échec, mat et roi non déplaçable"""
-def est_echec(fen, plateau):
+def est_echec(fen, plateau): #Regarde si un roi est en échec
 	roi = plateau[fen.partie["positions_rois"][fen.partie["joueur"]]]
 	possibilites, menaces = roi.possibilite_menace(plateau, [f"{roi.i}{roi.j}"])
 	if possibilites == []:
@@ -492,7 +483,7 @@ def est_echec(fen, plateau):
 	else:
 		return False
 
-def est_mat(fen):
+def est_mat(fen): #Regarde si un roi est mat
 	plateau = fen.partie["plateau"]
 	roi = plateau[fen.partie["positions_rois"][fen.partie["joueur"]]]
 	if roi.cases_possibles(plateau) == [] and mouvement_toutes_pieces(fen):
@@ -500,7 +491,7 @@ def est_mat(fen):
 	else:
 		return False
 
-def attention_messir(fen, possibilites, piece):
+def attention_messir(fen, possibilites, piece): #Supprime les possibilités mettant le roi en danger
 	possibilite_finales = possibilites.copy()
 	if type(piece) != classes.Roi:
 		for e in possibilites:
