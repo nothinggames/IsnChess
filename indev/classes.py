@@ -17,6 +17,8 @@ IMAGES = {
 	"C_noir": "images/cavalier_noir.png"
 }
 
+
+# Pion terminé à 95%, il manque la promotion
 class Pion():
 	def __init__(self, equipe, i, j, deplace=False):
 		self.equipe = equipe
@@ -134,7 +136,7 @@ class Roi():
 	def cases_possibles(self, plateau,
 						menace=True):  # Le menace sert à dire si le roi qui apelle la fonction est réel ou fictif
 		possibilites = []
-		plateau[f"{self.i}{self.j}"] = None
+		plateau[tuple_to_string((self.i, self.j))] = None
 		for i in range(-1, 2):
 			for j in range(-1, 2):
 				if (i, j) != (0, 0):
@@ -143,15 +145,34 @@ class Roi():
 						if plateau[tuple_to_string(case)] == None or plateau[
 							tuple_to_string(case)].equipe != self.equipe:
 							possibilites.append(tuple_to_string(case))
+
+		def vide_entre_2_cases(j1, j2):
+			for j in range(j1 + 1, j2):
+				if plateau[tuple_to_string((i, j))] != None:
+					return False
+			return True
+
+		if not self.deplace:
+			if self.equipe == "blanc":
+				i = 0
+			else:
+				i = 7
+			if plateau[tuple_to_string((i, 0))] != None and not plateau[tuple_to_string((i, 0))].deplace:
+				if vide_entre_2_cases(0, self.j):
+					possibilites.append(f"{i}{1}")
+			if plateau[tuple_to_string((i, 7))] != None and not plateau[tuple_to_string((i, 7))].deplace:
+				if vide_entre_2_cases(self.j, 7):
+					possibilites.append(f"{i}{6}")
+
 		if menace:
 			possibilites, d = self.possibilite_menace(plateau, possibilites)
-		plateau[f"{self.i}{self.j}"] = self
+		plateau[tuple_to_string((self.i, self.j))] = self
 		return possibilites
 
 	def possibilite_menace(self, plateau, possibilite):
 		cases_sures = possibilite[:]
 		cases_dangereuses = []
-		for e in possibilite:  # On verifie chaque case où peut aller le roi pour voir si elle est dangereuse
+		for e in possibilite:  # On verifi chaque case où peut aller le roi pour voir si elle est dangereuse
 			if self.verification_cavalier(plateau, e[0], e[1], cases_sures) or \
 					self.verification_tour(plateau, e[0], e[1], cases_sures) or \
 					self.verification_fou(plateau, e[0], e[1], cases_sures) or \
@@ -165,7 +186,7 @@ class Roi():
 		tour = Tour(self.equipe, int(i), int(j))  # Pareil pour les tours et la moitié du mouvement de la dame
 		for case in tour.cases_possibles(plateau):
 			if type(plateau[case]) == Tour or type(plateau[case]) == Dame:
-				if f"{i}{j}" in cases_a_verifier:
+				if tuple_to_string((i, j)) in cases_a_verifier:
 					return True
 		return False
 
@@ -173,7 +194,7 @@ class Roi():
 		roi = Roi(self.equipe, int(i), int(j))  # De même pour le roi adverse
 		for case in roi.cases_possibles(plateau, False):
 			if type(plateau[case]) == Roi:
-				if f"{i}{j}" in cases_a_verifier:
+				if tuple_to_string((i, j)) in cases_a_verifier:
 					return True
 		return False
 
@@ -181,7 +202,7 @@ class Roi():
 		fou = Fou(self.equipe, int(i), int(j))  # On detecte  fou et dame en diagonale
 		for case in fou.cases_possibles(plateau):
 			if type(plateau[case]) == Fou or type(plateau[case]) == Dame:
-				if f"{i}{j}" in cases_a_verifier:
+				if tuple_to_string((i, j)) in cases_a_verifier:
 					return True
 		return False
 
@@ -190,7 +211,7 @@ class Roi():
 			j))  # On creer un cavalier fictif qui va verifier si le case où veux aller le roi est menacée
 		for case in cav.cases_possibles(plateau):
 			if type(plateau[case]) == Cavalier:
-				if f"{i}{j}" in cases_a_verifier:
+				if tuple_to_string((i, j)) in cases_a_verifier:
 					return True
 		return False
 
@@ -198,7 +219,7 @@ class Roi():
 		pion = Pion(self.equipe, int(i), int(j), True)
 		for case in pion.cases_possibles(plateau):
 			if type(plateau[case]) == Pion:
-				if f"{i}{j}" in cases_a_verifier:
+				if tuple_to_string((i, j)) in cases_a_verifier:
 					return True
 		return False
 
