@@ -89,7 +89,7 @@ def nouvelle_partie(fen, type):
 	fen.partie["temps_enregistre"] = 0
 	fen.partie["pieces_mangees_blanc"] = []
 	fen.partie["pieces_mangees_noir"] = []
-	fen.partie["positions_rois"] = {"blanc":"04", "noir":"73"}
+	fen.partie["positions_rois"] = {"blanc":"04", "noir":"74"}
 	fen.partie["terminee"] = False
 	afficher_partie(fen)
 
@@ -177,9 +177,9 @@ def initialiser_pieces(plateau):
 
 	# Dames et Rois
 	plateau[f'{0}{4}'] = Roi("blanc", 0, 4)
-	plateau[f'{7}{4}'] = Roi("noir", 7, 3)
+	plateau[f'{7}{4}'] = Roi("noir", 7, 4)
 	plateau[f'{0}{3}'] = Dame("blanc", 0, 3)
-	plateau[f'{7}{3}'] = Dame("noir", 7, 4)
+	plateau[f'{7}{3}'] = Dame("noir", 7, 3)
 
 
 """Fonctions utilitaires"""
